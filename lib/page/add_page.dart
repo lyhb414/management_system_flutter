@@ -22,7 +22,7 @@ class _AddPageState extends State<AddPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text("添加器材"),
+          title: const Text("注册新器材"),
         ),
         body: getBodyView());
   }
