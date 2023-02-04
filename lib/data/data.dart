@@ -30,6 +30,61 @@ class ActionHistory {
   });
 }
 
+class BorrowHistory {
+  String username;
+  String itemId;
+  int borrowNum;
+  DateTime borrowTime = DateTime.now();
+  List<ReturnHistory> returnHistorys = [];
+  int returnNum = 0;
+  bool isOver = false;
+
+  BorrowHistory({
+    required this.username,
+    required this.itemId,
+    required this.borrowNum,
+  });
+
+  bool returnItem(int returnItemNum) {
+    if (returnItemNum > borrowNum - returnNum) {
+      print("归还数量大于此次借用需归还数量");
+      return false;
+    } else {
+      var time = DateTime.now();
+      ReturnHistory history = ReturnHistory(returnNum: returnItemNum, returnTime: time);
+      returnHistorys.add(history);
+      returnNum += returnItemNum;
+
+      ItemDataManager().getItemById(itemId)!.borrowNum -= returnItemNum;
+      ItemDataManager().addActionHistory(itemId, returnItemNum, ActionType.RETURN);
+    }
+    if (returnNum == borrowNum) {
+      isOver = true;
+    }
+    return true;
+  }
+
+  bool returnAllItem() {
+    if (isOver) {
+      print("本次借用已完毕，无需归还");
+      return false;
+    } else {
+      returnItem(borrowNum - returnNum);
+      return true;
+    }
+  }
+}
+
+class ReturnHistory {
+  int returnNum;
+  DateTime returnTime;
+
+  ReturnHistory({
+    required this.returnNum,
+    required this.returnTime,
+  });
+}
+
 class ItemDataManager {
   static final ItemDataManager _itemDataManager = ItemDataManager._internal();
 
@@ -67,6 +122,8 @@ class ItemDataManager {
       actionType: 1,
     ),
   ];
+
+  final List<BorrowHistory> borrowHistorys = [];
 
   registerItem(String itemId, String itemName, int itemTotalNum) {
     if (_itemDatas.containsKey(itemId)) {
@@ -111,17 +168,7 @@ class ItemDataManager {
     } else {
       _itemDatas[itemId]!.borrowNum += num;
       addActionHistory(itemId, num, ActionType.BORROW);
-      return true;
-    }
-  }
-
-  bool returnItem(String itemId, int num) {
-    if (_itemDatas[itemId]!.borrowNum < num) {
-      print("归还数量大于已借用数量");
-      return false;
-    } else {
-      _itemDatas[itemId]!.borrowNum -= num;
-      addActionHistory(itemId, num, ActionType.RETURN);
+      borrowHistorys.add(BorrowHistory(username: myUsername, itemId: itemId, borrowNum: num));
       return true;
     }
   }
@@ -156,6 +203,31 @@ class ItemDataManager {
     }
     result.sort((left, right) {
       return left.actionTime.isBefore(right.actionTime) ? 1 : -1;
+    });
+    return result;
+  }
+
+  List<BorrowHistory> searchBorrowHistory(String searchId, int searchType) {
+    List<BorrowHistory> result = [];
+    if (searchType == HistorySearchType.USERNAME) {
+      for (var element in borrowHistorys) {
+        if (element.username == searchId) {
+          result.add(element);
+        }
+      }
+    } else if (searchType == HistorySearchType.ITEMID) {
+      for (var element in borrowHistorys) {
+        if (element.itemId == searchId) {
+          result.add(element);
+        }
+      }
+    }
+    result.sort((left, right) {
+      if (left.isOver ^ right.isOver) {
+        return left.isOver ? 1 : -1;
+      } else {
+        return left.borrowTime.isBefore(right.borrowTime) ? 1 : -1;
+      }
     });
     return result;
   }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import 'package:management_system_flutter/page/list_page.dart';
+import 'package:management_system_flutter/page/home_page.dart';
 import 'package:management_system_flutter/widget/login_input_widget.dart';
 import 'package:management_system_flutter/widget/common_button.dart';
 
@@ -80,7 +79,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       fontSize: 16,
                       onPress: (() {
                         Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) {
-                          return const ListPage();
+                          return const HomePage();
                         }));
                       }),
                     ),

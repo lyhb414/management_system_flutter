@@ -21,65 +21,65 @@ class _ListPageState extends State<ListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("器材列表"),
-      ),
-      drawer: Drawer(
-        child: Column(
-          // ignore: prefer_const_literals_to_create_immutables
-          children: [
-            Row(
-              children: const <Widget>[
-                Expanded(
-                  child: DrawerHeader(
-                    decoration: BoxDecoration(
-                      color: Colors.blue,
-                    ),
-                    child: Text(
-                      '导航',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 30,
-                      ),
-                    ),
-                  ),
-                )
-              ],
-            ),
-            ListTile(
-              leading: const Icon(Icons.home),
-              title: const Text(
-                '器材列表',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 20,
-                ),
-              ),
-              onTap: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.perm_identity),
-              title: const Text(
-                '个人主页',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 20,
-                ),
-              ),
-              onTap: () {
-                Navigator.of(context).pop();
-                Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) {
-                  return const UserPage();
-                })).then((value) {
-                  setState(() {});
-                });
-              },
-            ),
-          ],
-        ),
-      ),
+      // appBar: AppBar(
+      //   title: const Text("器材列表"),
+      // ),
+      // drawer: Drawer(
+      //   child: Column(
+      //     // ignore: prefer_const_literals_to_create_immutables
+      //     children: [
+      //       Row(
+      //         children: const <Widget>[
+      //           Expanded(
+      //             child: DrawerHeader(
+      //               decoration: BoxDecoration(
+      //                 color: Colors.blue,
+      //               ),
+      //               child: Text(
+      //                 '导航',
+      //                 style: TextStyle(
+      //                   color: Colors.white,
+      //                   fontSize: 30,
+      //                 ),
+      //               ),
+      //             ),
+      //           )
+      //         ],
+      //       ),
+      //       ListTile(
+      //         leading: const Icon(Icons.home),
+      //         title: const Text(
+      //           '器材列表',
+      //           style: TextStyle(
+      //             color: Colors.black,
+      //             fontSize: 20,
+      //           ),
+      //         ),
+      //         onTap: () {
+      //           Navigator.of(context).pop();
+      //         },
+      //       ),
+      //       ListTile(
+      //         leading: const Icon(Icons.perm_identity),
+      //         title: const Text(
+      //           '个人主页',
+      //           style: TextStyle(
+      //             color: Colors.black,
+      //             fontSize: 20,
+      //           ),
+      //         ),
+      //         onTap: () {
+      //           Navigator.of(context).pop();
+      //           Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) {
+      //             return const UserPage();
+      //           })).then((value) {
+      //             _onRefresh();
+      //           });
+      //         },
+      //       ),
+      //     ],
+      //   ),
+      // ),
       body: getBodyView(),
       floatingActionButton: Column(
         mainAxisAlignment: MainAxisAlignment.end,
@@ -91,8 +91,7 @@ class _ListPageState extends State<ListPage> {
               Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) {
                 return const AddPage();
               })).then((value) {
-                setState(() {});
-                refreshData();
+                _onRefresh();
               });
             },
           ),
@@ -111,7 +110,9 @@ class _ListPageState extends State<ListPage> {
               onTap: () {
                 Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) {
                   return ItemPage(itemId: itemIds[index]);
-                }));
+                })).then((value) {
+                  _onRefresh();
+                });
               },
               child: ItemCard(itemIds[index]));
         },

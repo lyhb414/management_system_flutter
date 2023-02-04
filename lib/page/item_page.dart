@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:management_system_flutter/data/data.dart';
 import 'package:management_system_flutter/widget/common_button.dart';
 import 'package:management_system_flutter/page/borrow_page.dart';
-import 'package:management_system_flutter/page/return_page.dart';
+import 'package:management_system_flutter/page/borrow_history_page.dart';
 import 'package:management_system_flutter/page/action_history_page.dart';
 import 'package:management_system_flutter/const/const.dart';
+
+import 'borrow_history_list_page.dart';
 
 ///器材详情页面
 class ItemPage extends StatefulWidget {
@@ -33,7 +35,14 @@ class _ItemPageState extends State<ItemPage> {
       appBar: AppBar(
         title: Text(_title),
       ),
-      body: Container(
+      body: getBodyView(),
+    );
+  }
+
+  Widget getBodyView() {
+    return RefreshIndicator(
+      onRefresh: _onRefresh,
+      child: Container(
         alignment: Alignment.centerLeft,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -65,30 +74,31 @@ class _ItemPageState extends State<ItemPage> {
                         itemId: _itemId,
                       );
                     })).then((value) {
-                      setState(() {});
+                      _onRefresh();
                     });
                   }),
                 ),
                 const Padding(padding: EdgeInsets.all(5.0)),
                 CommonButton(
-                  text: "归还",
+                  text: "借用历史",
                   color: Theme.of(context).primaryColor,
                   textColor: Colors.white,
                   fontSize: 20,
                   onPress: (() {
                     Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) {
-                      return ReturnPage(
-                        itemId: _itemId,
+                      return BorrowHistoryListPage(
+                        searchId: _itemId,
+                        searchType: HistorySearchType.ITEMID,
                       );
                     })).then((value) {
-                      setState(() {});
+                      _onRefresh();
                     });
                   }),
                 ),
                 const Padding(padding: EdgeInsets.all(5.0)),
                 CommonButton(
-                  text: "操作记录",
-                  color: Theme.of(context).primaryColor,
+                  text: "操作日志",
+                  color: Colors.orange,
                   textColor: Colors.white,
                   fontSize: 20,
                   onPress: (() {
@@ -98,7 +108,7 @@ class _ItemPageState extends State<ItemPage> {
                         searchType: HistorySearchType.ITEMID,
                       );
                     })).then((value) {
-                      setState(() {});
+                      _onRefresh();
                     });
                   }),
                 ),
@@ -114,5 +124,9 @@ class _ItemPageState extends State<ItemPage> {
         ),
       ),
     );
+  }
+
+  Future<void> _onRefresh() async {
+    setState(() {});
   }
 }

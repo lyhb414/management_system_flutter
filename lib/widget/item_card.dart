@@ -20,7 +20,8 @@ class ItemCard extends StatelessWidget {
             children: [
               Text("器材名称: ${ItemDataManager().getItemById(_itemId)!.name}"),
               const Padding(padding: EdgeInsets.all(5.0)),
-              Text("空闲数量: ${ItemDataManager().getItemById(_itemId)!.getRemainNum()}"),
+              Text(
+                  "空闲数量: ${ItemDataManager().getItemById(_itemId)!.getRemainNum()} / ${ItemDataManager().getItemById(_itemId)!.totalNum}"),
             ],
           ),
         ),
