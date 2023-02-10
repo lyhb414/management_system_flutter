@@ -1,8 +1,15 @@
 // ignore_for_file: library_private_types_in_public_api
 
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:management_system_flutter/page/list_page.dart';
+import 'package:management_system_flutter/page/search_item_page.dart';
 import 'package:management_system_flutter/page/user_page.dart';
+
+import '../const/const.dart';
+import '../data/data.dart';
+import 'borrow_history_list_page.dart';
 
 ///主页页面
 class HomePage extends StatefulWidget {
@@ -14,17 +21,36 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int currentIndex = 0;
-  List pageList = [const ListPage(), const UserPage()];
+  List pageList = [
+    const ListPage(),
+    BorrowHistoryListPage(
+      searchId: ItemDataManager().getMyUserName(),
+      searchType: HistorySearchType.USERNAME,
+      isShowAppBar: false,
+    ),
+    const UserPage(),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('器材管理系统'),
+        actions: (currentIndex == 0)
+            ? ([
+                IconButton(
+                  onPressed: (() {
+                    Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) {
+                      return const SearchItemPage();
+                    }));
+                  }),
+                  icon: const Icon(Icons.search),
+                )
+              ])
+            : null,
       ),
       drawer: Drawer(
         child: Column(
-          // ignore: prefer_const_literals_to_create_immutables
           children: [
             Row(
               children: const <Widget>[
@@ -71,6 +97,7 @@ class _HomePageState extends State<HomePage> {
         type: BottomNavigationBarType.fixed, //配置底部tabs可以有
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "首页"),
+          BottomNavigationBarItem(icon: Icon(Icons.history), label: "借用历史"),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: "我的"),
         ],
       ),

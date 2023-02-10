@@ -10,7 +10,8 @@ import 'package:management_system_flutter/widget/borrow_history_card.dart';
 class BorrowHistoryListPage extends StatefulWidget {
   final String searchId;
   final int searchType;
-  const BorrowHistoryListPage({super.key, required this.searchId, required this.searchType});
+  final bool isShowAppBar;
+  const BorrowHistoryListPage({super.key, required this.searchId, required this.searchType, this.isShowAppBar = true});
 
   @override
   _BorrowHistoryListPageState createState() => _BorrowHistoryListPageState();
@@ -19,6 +20,7 @@ class BorrowHistoryListPage extends StatefulWidget {
 class _BorrowHistoryListPageState extends State<BorrowHistoryListPage> {
   var _searchId;
   var _searchType;
+  var _isShowAppBar;
   var _historys;
 
   @override
@@ -26,6 +28,7 @@ class _BorrowHistoryListPageState extends State<BorrowHistoryListPage> {
     super.initState();
     _searchId = widget.searchId;
     _searchType = widget.searchType;
+    _isShowAppBar = widget.isShowAppBar;
     _historys = ItemDataManager().searchBorrowHistory(widget.searchId, widget.searchType);
   }
 
@@ -40,9 +43,11 @@ class _BorrowHistoryListPageState extends State<BorrowHistoryListPage> {
       _searchName = "";
     }
     return Scaffold(
-      appBar: AppBar(
-        title: Text("借用历史列表: $_searchName"),
-      ),
+      appBar: _isShowAppBar
+          ? AppBar(
+              title: Text("借用历史列表: $_searchName"),
+            )
+          : null,
       body: getBodyView(),
     );
   }

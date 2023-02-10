@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print
+// ignore_for_file: avoid_print, non_constant_identifier_names
 import 'package:management_system_flutter/const/const.dart';
 
 class ItemData {
@@ -113,15 +113,7 @@ class ItemDataManager {
     ),
   };
 
-  final List<ActionHistory> actionHistorys = [
-    ActionHistory(
-      username: myUsername,
-      itemId: "1",
-      actionNum: 1,
-      actionTime: DateTime.now(),
-      actionType: 1,
-    ),
-  ];
+  final List<ActionHistory> actionHistorys = [];
 
   final List<BorrowHistory> borrowHistorys = [];
 
@@ -136,6 +128,9 @@ class ItemDataManager {
   }
 
   unregisterItem(String itemId) {
+    borrowHistorys.removeWhere((element) {
+      return element.itemId == itemId;
+    });
     _itemDatas.remove(itemId);
   }
 
@@ -184,6 +179,24 @@ class ItemDataManager {
       actionType: actionType,
     );
     actionHistorys.add(history);
+  }
+
+  List<String> SearchItemList(String itemSearchText, int searchType) {
+    List<String> result = [];
+    if (searchType == ItemSearchType.ITEMNAME) {
+      _itemDatas.forEach((key, value) {
+        if (value.name.contains(itemSearchText)) {
+          result.add(key);
+        }
+      });
+    } else if (searchType == ItemSearchType.ITEMID) {
+      _itemDatas.forEach((key, value) {
+        if (key.contains(itemSearchText)) {
+          result.add(key);
+        }
+      });
+    }
+    return result;
   }
 
   List<ActionHistory> searchActionHistory(String searchId, int searchType) {

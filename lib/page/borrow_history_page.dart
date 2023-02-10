@@ -30,7 +30,7 @@ class _BorrowHistoryPageState extends State<BorrowHistoryPage> {
     //final String _itemName = ItemDataManager().getItemById(_itemId)!.name;
     return Scaffold(
         appBar: AppBar(
-          title: const Text("借用历史"),
+          title: Text("借用历史: ${ItemDataManager().getItemById(_history.itemId)!.name}"),
         ),
         body: getBodyView(context));
   }

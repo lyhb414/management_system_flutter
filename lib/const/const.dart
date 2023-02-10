@@ -21,3 +21,9 @@ class HistorySearchType {
   static const int USERNAME = 1;
   static const int ITEMID = 2;
 }
+
+class ItemSearchType {
+  static const int NONE = 0;
+  static const int ITEMNAME = 1;
+  static const int ITEMID = 2;
+}

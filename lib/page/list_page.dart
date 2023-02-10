@@ -5,7 +5,6 @@ import 'package:management_system_flutter/data/data.dart';
 import 'package:management_system_flutter/page/item_page.dart';
 import 'package:management_system_flutter/widget/item_card.dart';
 import 'package:management_system_flutter/page/add_page.dart';
-import 'package:management_system_flutter/page/user_page.dart';
 
 ///器材列表页面
 class ListPage extends StatefulWidget {
@@ -21,65 +20,6 @@ class _ListPageState extends State<ListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(
-      //   title: const Text("器材列表"),
-      // ),
-      // drawer: Drawer(
-      //   child: Column(
-      //     // ignore: prefer_const_literals_to_create_immutables
-      //     children: [
-      //       Row(
-      //         children: const <Widget>[
-      //           Expanded(
-      //             child: DrawerHeader(
-      //               decoration: BoxDecoration(
-      //                 color: Colors.blue,
-      //               ),
-      //               child: Text(
-      //                 '导航',
-      //                 style: TextStyle(
-      //                   color: Colors.white,
-      //                   fontSize: 30,
-      //                 ),
-      //               ),
-      //             ),
-      //           )
-      //         ],
-      //       ),
-      //       ListTile(
-      //         leading: const Icon(Icons.home),
-      //         title: const Text(
-      //           '器材列表',
-      //           style: TextStyle(
-      //             color: Colors.black,
-      //             fontSize: 20,
-      //           ),
-      //         ),
-      //         onTap: () {
-      //           Navigator.of(context).pop();
-      //         },
-      //       ),
-      //       ListTile(
-      //         leading: const Icon(Icons.perm_identity),
-      //         title: const Text(
-      //           '个人主页',
-      //           style: TextStyle(
-      //             color: Colors.black,
-      //             fontSize: 20,
-      //           ),
-      //         ),
-      //         onTap: () {
-      //           Navigator.of(context).pop();
-      //           Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) {
-      //             return const UserPage();
-      //           })).then((value) {
-      //             _onRefresh();
-      //           });
-      //         },
-      //       ),
-      //     ],
-      //   ),
-      // ),
       body: getBodyView(),
       floatingActionButton: Column(
         mainAxisAlignment: MainAxisAlignment.end,

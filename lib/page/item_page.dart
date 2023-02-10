@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:management_system_flutter/data/data.dart';
 import 'package:management_system_flutter/widget/common_button.dart';
 import 'package:management_system_flutter/page/borrow_page.dart';
-import 'package:management_system_flutter/page/borrow_history_page.dart';
 import 'package:management_system_flutter/page/action_history_page.dart';
 import 'package:management_system_flutter/const/const.dart';
 
@@ -95,6 +94,16 @@ class _ItemPageState extends State<ItemPage> {
                     });
                   }),
                 ),
+              ],
+            ),
+            const Padding(padding: EdgeInsets.all(10.0)),
+            const Divider(
+              height: 1.0,
+              color: Colors.blue,
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
                 const Padding(padding: EdgeInsets.all(5.0)),
                 CommonButton(
                   text: "操作日志",
@@ -112,12 +121,18 @@ class _ItemPageState extends State<ItemPage> {
                     });
                   }),
                 ),
+                const Padding(padding: EdgeInsets.all(5.0)),
+                CommonButton(
+                  text: "删除器材",
+                  color: Colors.redAccent,
+                  textColor: Colors.white,
+                  fontSize: 20,
+                  onPress: (() {
+                    ItemDataManager().unregisterItem(_itemId);
+                    Navigator.pop(context);
+                  }),
+                ),
               ],
-            ),
-            const Padding(padding: EdgeInsets.all(10.0)),
-            const Divider(
-              height: 1.0,
-              color: Colors.blue,
             ),
             const Padding(padding: EdgeInsets.all(10.0)),
           ],
