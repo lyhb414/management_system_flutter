@@ -35,11 +35,18 @@ class _BorrowPageState extends State<BorrowPage> {
   }
 
   Widget getBodyView(BuildContext context) {
+    var remainNum = ItemDataManager().getItemById(_itemId)!.getRemainNum();
     return ListView(
       children: <Widget>[
         const Padding(padding: EdgeInsets.all(20.0)),
         Column(
           children: [
+            Text(
+              "空闲数量: $remainNum",
+              style: TextStyle(
+                color: (remainNum > 0) ? Colors.green : Colors.red,
+              ),
+            ),
             const Padding(padding: EdgeInsets.all(10.0)),
             TextFormField(
               inputFormatters: [FilteringTextInputFormatter.allow(RegExp("[0-9]"))],
@@ -66,7 +73,7 @@ class _BorrowPageState extends State<BorrowPage> {
                 textColor: Colors.white,
                 fontSize: 20,
                 onPress: () {
-                  if (borrowNum >= 0) {
+                  if (borrowNum > 0) {
                     if (ItemDataManager().borrowItem(_itemId, borrowNum)) {
                       Navigator.pop(context);
                     }

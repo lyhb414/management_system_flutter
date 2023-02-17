@@ -8,6 +8,7 @@ import 'package:management_system_flutter/page/action_history_page.dart';
 import 'package:management_system_flutter/const/const.dart';
 
 import 'borrow_history_list_page.dart';
+import 'edit_page.dart';
 
 ///器材详情页面
 class ItemPage extends StatefulWidget {
@@ -39,6 +40,7 @@ class _ItemPageState extends State<ItemPage> {
   }
 
   Widget getBodyView() {
+    var remainNum = ItemDataManager().getItemById(_itemId)!.getRemainNum();
     return RefreshIndicator(
       onRefresh: _onRefresh,
       child: Container(
@@ -47,11 +49,20 @@ class _ItemPageState extends State<ItemPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Padding(padding: EdgeInsets.all(5.0)),
+            Text("器材id: $_itemId"),
+            const Padding(padding: EdgeInsets.all(5.0)),
             Text("器材名称: ${ItemDataManager().getItemById(_itemId)!.name}"),
             const Padding(padding: EdgeInsets.all(5.0)),
             Text("总数: ${ItemDataManager().getItemById(_itemId)!.totalNum}"),
             const Padding(padding: EdgeInsets.all(5.0)),
-            Text("空闲数量: ${ItemDataManager().getItemById(_itemId)!.getRemainNum()}"),
+            Text(
+              "空闲数量: $remainNum",
+              style: TextStyle(
+                color: (remainNum > 0) ? Colors.green : Colors.red,
+              ),
+            ),
+            const Padding(padding: EdgeInsets.all(5.0)),
+            Text("器材位置: ${ItemDataManager().getItemById(_itemId)!.location}"),
             const Padding(padding: EdgeInsets.all(10.0)),
             const Divider(
               height: 1.0,
@@ -101,9 +112,26 @@ class _ItemPageState extends State<ItemPage> {
               height: 1.0,
               color: Colors.blue,
             ),
+            const Padding(padding: EdgeInsets.all(10.0)),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                const Padding(padding: EdgeInsets.all(5.0)),
+                CommonButton(
+                  text: "编辑",
+                  color: Colors.orange,
+                  textColor: Colors.white,
+                  fontSize: 20,
+                  onPress: (() {
+                    Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) {
+                      return EditPage(
+                        itemId: _itemId,
+                      );
+                    })).then((value) {
+                      _onRefresh();
+                    });
+                  }),
+                ),
                 const Padding(padding: EdgeInsets.all(5.0)),
                 CommonButton(
                   text: "操作日志",
@@ -121,6 +149,17 @@ class _ItemPageState extends State<ItemPage> {
                     });
                   }),
                 ),
+              ],
+            ),
+            const Padding(padding: EdgeInsets.all(10.0)),
+            const Divider(
+              height: 1.0,
+              color: Colors.blue,
+            ),
+            const Padding(padding: EdgeInsets.all(10.0)),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
                 const Padding(padding: EdgeInsets.all(5.0)),
                 CommonButton(
                   text: "删除器材",

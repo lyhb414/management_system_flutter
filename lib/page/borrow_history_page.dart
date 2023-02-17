@@ -6,6 +6,8 @@ import 'package:management_system_flutter/data/data.dart';
 import 'package:management_system_flutter/widget/common_button.dart';
 import 'package:date_format/date_format.dart';
 
+import '../widget/return_history_card.dart';
+
 //借用历史页面
 class BorrowHistoryPage extends StatefulWidget {
   final BorrowHistory _history;
@@ -17,12 +19,14 @@ class BorrowHistoryPage extends StatefulWidget {
 
 class _BorrowHistoryPageState extends State<BorrowHistoryPage> {
   late final BorrowHistory _history;
+  var _returnHistorys;
   var returnNum = -1;
 
   @override
   void initState() {
     super.initState();
     _history = widget._history;
+    _returnHistorys = _history.returnHistorys;
   }
 
   @override
@@ -38,7 +42,7 @@ class _BorrowHistoryPageState extends State<BorrowHistoryPage> {
   Widget getBodyView(BuildContext context) {
     return ListView(
       children: <Widget>[
-        const Padding(padding: EdgeInsets.all(20.0)),
+        const Padding(padding: EdgeInsets.all(10.0)),
         Column(
           children: [
             const Padding(padding: EdgeInsets.all(5.0)),
@@ -112,7 +116,27 @@ class _BorrowHistoryPageState extends State<BorrowHistoryPage> {
                   },
                 ),
               ],
-            )
+            ),
+            const Padding(padding: EdgeInsets.all(8.0)),
+            const Divider(
+              height: 1.0,
+              color: Colors.blue,
+            ),
+            const Padding(padding: EdgeInsets.all(8.0)),
+            SizedBox(
+              height: 400,
+              child: _returnHistorys.length > 0
+                  ? ListView.builder(
+                      padding: const EdgeInsets.all(5.0),
+                      itemBuilder: (context, index) {
+                        return InkWell(
+                          child: ReturnHistoryCard(_returnHistorys[index]),
+                        );
+                      },
+                      itemCount: _returnHistorys.length,
+                    )
+                  : null,
+            ),
           ],
         )
       ],

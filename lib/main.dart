@@ -73,7 +73,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 children: [
                   Expanded(
                     child: CommonButton(
-                      text: "登陆",
+                      text: "直接进入",
                       color: Theme.of(context).primaryColor,
                       textColor: Colors.white,
                       fontSize: 16,
@@ -89,7 +89,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                   Expanded(
                     child: CommonButton(
-                      text: "注册",
+                      text: "注册（暂无）",
                       color: Theme.of(context).primaryColor,
                       textColor: Colors.white,
                       fontSize: 16,

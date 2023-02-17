@@ -5,9 +5,10 @@ class ItemData {
   String name;
   int totalNum;
   int borrowNum;
+  String location;
   String? addText = "";
 
-  ItemData({required this.name, required this.totalNum, this.borrowNum = 0, this.addText});
+  ItemData({required this.name, required this.totalNum, this.borrowNum = 0, this.addText, required this.location});
 
   int getRemainNum() {
     return totalNum - borrowNum;
@@ -17,6 +18,7 @@ class ItemData {
 class ActionHistory {
   String username;
   String itemId;
+  String itemName;
   int actionNum;
   DateTime actionTime;
   int actionType;
@@ -24,6 +26,7 @@ class ActionHistory {
   ActionHistory({
     required this.username,
     required this.itemId,
+    required this.itemName,
     required this.actionNum,
     required this.actionTime,
     required this.actionType,
@@ -96,7 +99,7 @@ class ItemDataManager {
   ///构造函数私有化，防止被误创建
   ItemDataManager._internal();
 
-  static String myUsername = "610238281";
+  static String myUsername = "test admin";
 
   String getMyUserName() {
     return myUsername;
@@ -104,12 +107,14 @@ class ItemDataManager {
 
   final Map<String, ItemData> _itemDatas = {
     "1": ItemData(
-      name: "a",
+      name: "器材a",
       totalNum: 10,
+      location: "位置a",
     ),
     "2": ItemData(
-      name: "b",
+      name: "器材b",
       totalNum: 20,
+      location: "位置b",
     ),
   };
 
@@ -117,12 +122,12 @@ class ItemDataManager {
 
   final List<BorrowHistory> borrowHistorys = [];
 
-  registerItem(String itemId, String itemName, int itemTotalNum) {
+  bool registerItem(String itemId, String itemName, int itemTotalNum, String itemLocation) {
     if (_itemDatas.containsKey(itemId)) {
       return false;
     }
 
-    var item = ItemData(name: itemName, totalNum: itemTotalNum);
+    var item = ItemData(name: itemName, totalNum: itemTotalNum, location: itemLocation);
     _itemDatas[itemId] = item;
     return true;
   }
@@ -160,6 +165,9 @@ class ItemDataManager {
     if (_itemDatas[itemId]!.getRemainNum() < num) {
       print("减少数量大于空余数量");
       return false;
+    } else if (num < 0) {
+      print("借用数量需大于0");
+      return false;
     } else {
       _itemDatas[itemId]!.borrowNum += num;
       addActionHistory(itemId, num, ActionType.BORROW);
@@ -174,6 +182,7 @@ class ItemDataManager {
     var history = ActionHistory(
       username: myUsername,
       itemId: itemId,
+      itemName: getItemById(itemId)!.name,
       actionNum: actionNum,
       actionTime: time,
       actionType: actionType,
@@ -243,5 +252,17 @@ class ItemDataManager {
       }
     });
     return result;
+  }
+
+  bool editItem(String itemId, String itemName, int itemTotalNum, String itemLocation) {
+    var item = getItemById(itemId);
+    if (item!.borrowNum >= itemTotalNum) {
+      print("修改后的总数小于已借出的数量");
+      return false;
+    }
+    item.name = itemName;
+    item.totalNum = itemTotalNum;
+    item.location = itemLocation;
+    return true;
   }
 }

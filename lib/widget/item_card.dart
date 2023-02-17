@@ -7,6 +7,7 @@ class ItemCard extends StatelessWidget {
   const ItemCard(this._itemId, {super.key});
   @override
   Widget build(BuildContext context) {
+    var remainNum = ItemDataManager().getItemById(_itemId)!.getRemainNum();
     return Center(
       child: Card(
         elevation: 2.0,
@@ -21,7 +22,11 @@ class ItemCard extends StatelessWidget {
               Text("器材名称: ${ItemDataManager().getItemById(_itemId)!.name}"),
               const Padding(padding: EdgeInsets.all(5.0)),
               Text(
-                  "空闲数量: ${ItemDataManager().getItemById(_itemId)!.getRemainNum()} / ${ItemDataManager().getItemById(_itemId)!.totalNum}"),
+                "空闲数量: ${ItemDataManager().getItemById(_itemId)!.getRemainNum()} / ${ItemDataManager().getItemById(_itemId)!.totalNum}",
+                style: TextStyle(
+                  color: (remainNum > 0) ? Colors.green : Colors.red,
+                ),
+              ),
             ],
           ),
         ),

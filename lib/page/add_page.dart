@@ -17,6 +17,7 @@ class _AddPageState extends State<AddPage> {
   var itemId = '';
   var itemName = '';
   var itemTotalNum = -1;
+  var itemLocation = "";
 
   @override
   Widget build(BuildContext context) {
@@ -38,8 +39,8 @@ class _AddPageState extends State<AddPage> {
               keyboardType: TextInputType.text,
               textInputAction: TextInputAction.done,
               decoration: const InputDecoration(
-                hintText: '请输入器材id(test)',
-                labelText: '器材id(test)',
+                hintText: '请输入器材id',
+                labelText: '器材id',
                 border: OutlineInputBorder(),
               ),
               onChanged: (value) {
@@ -60,7 +61,6 @@ class _AddPageState extends State<AddPage> {
                 border: OutlineInputBorder(),
               ),
               onChanged: (value) {
-                itemName = value;
                 if (value.isNotEmpty) {
                   itemName = value;
                 } else {
@@ -87,6 +87,23 @@ class _AddPageState extends State<AddPage> {
               },
             ),
             const Padding(padding: EdgeInsets.all(10.0)),
+            TextFormField(
+              keyboardType: TextInputType.text,
+              textInputAction: TextInputAction.done,
+              decoration: const InputDecoration(
+                hintText: '请输入器材位置',
+                labelText: '器材位置',
+                border: OutlineInputBorder(),
+              ),
+              onChanged: (value) {
+                if (value.isNotEmpty) {
+                  itemLocation = value;
+                } else {
+                  itemLocation = '';
+                }
+              },
+            ),
+            const Padding(padding: EdgeInsets.all(10.0)),
             Center(
               child: CommonButton(
                 text: "添加",
@@ -94,9 +111,15 @@ class _AddPageState extends State<AddPage> {
                 textColor: Colors.white,
                 fontSize: 20,
                 onPress: () {
-                  if ((itemId.isNotEmpty) && (itemName.isNotEmpty) && (itemTotalNum >= 0)) {
-                    ItemDataManager().registerItem(itemId, itemName, itemTotalNum);
-                    Navigator.pop(context);
+                  if ((itemId.isNotEmpty) &&
+                      (itemName.isNotEmpty) &&
+                      (itemTotalNum >= 0) &&
+                      (itemLocation.isNotEmpty)) {
+                    if (ItemDataManager().registerItem(itemId, itemName, itemTotalNum, itemLocation)) {
+                      Navigator.pop(context);
+                    } else {
+                      print("此id已使用");
+                    }
                   } else {
                     print("添加参数错误");
                   }
