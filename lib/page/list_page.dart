@@ -15,12 +15,18 @@ class ListPage extends StatefulWidget {
 }
 
 class _ListPageState extends State<ListPage> {
-  var itemIds = ItemDataManager().getItemIdList();
+  late Future<List<String>> itemIds;
+
+  @override
+  void initState() {
+    super.initState();
+    refreshData();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: getBodyView(),
+      body: getBody(),
       floatingActionButton: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
@@ -40,24 +46,38 @@ class _ListPageState extends State<ListPage> {
     );
   }
 
-  Widget getBodyView() {
+  Widget getBody() {
     return RefreshIndicator(
-      onRefresh: _onRefresh,
-      child: ListView.builder(
-        padding: const EdgeInsets.all(5.0),
-        itemBuilder: (context, index) {
-          return InkWell(
-              onTap: () {
-                Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) {
-                  return ItemPage(itemId: itemIds[index]);
-                })).then((value) {
-                  _onRefresh();
-                });
-              },
-              child: ItemCard(itemIds[index]));
-        },
-        itemCount: itemIds.length,
-      ),
+        onRefresh: _onRefresh,
+        child: FutureBuilder<List<dynamic>>(
+          future: itemIds,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return const Center(child: Text('Error loading data'));
+            } else {
+              return getBodyView(snapshot.data);
+            }
+          },
+        ));
+  }
+
+  Widget getBodyView(List<dynamic>? itemIds) {
+    return ListView.builder(
+      padding: const EdgeInsets.all(5.0),
+      itemBuilder: (context, index) {
+        return InkWell(
+            onTap: () {
+              Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) {
+                return ItemPage(itemId: itemIds[index]);
+              })).then((value) {
+                _onRefresh();
+              });
+            },
+            child: ItemCard(itemId: itemIds[index]));
+      },
+      itemCount: itemIds!.length,
     );
   }
 
@@ -66,7 +86,7 @@ class _ListPageState extends State<ListPage> {
     refreshData();
   }
 
-  refreshData() {
+  void refreshData() {
     itemIds = ItemDataManager().getItemIdList();
   }
 }

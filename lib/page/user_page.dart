@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:management_system_flutter/data/data.dart';
 import 'package:management_system_flutter/const/const.dart';
-import 'package:management_system_flutter/page/action_history_page.dart';
 
 //用户页面
 class UserPage extends StatefulWidget {
@@ -26,39 +25,6 @@ class _UserPageState extends State<UserPage> {
       children: ListTile.divideTiles(
         context: context,
         tiles: [
-          // ListTile(
-          //   leading: const Icon(Icons.history),
-          //   title: const Text(
-          //     '借用历史',
-          //     style: TextStyle(
-          //       color: Colors.black,
-          //       fontSize: 20,
-          //     ),
-          //   ),
-          //   onTap: () {
-          //     Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) {
-          //       return BorrowHistoryListPage(
-          //         searchId: ItemDataManager().getMyUserName(),
-          //         searchType: HistorySearchType.USERNAME,
-          //       );
-          //     }));
-          //   },
-          // ),
-          ListTile(
-            leading: const Icon(Icons.description),
-            title: const Text(
-              '操作日志',
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 20,
-              ),
-            ),
-            onTap: () {
-              Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) {
-                return ActionHistoryPage(searchId: userName, searchType: HistorySearchType.USERNAME);
-              }));
-            },
-          ),
           ListTile(
             leading: const Icon(Icons.exit_to_app),
             title: const Text(

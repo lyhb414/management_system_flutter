@@ -1,7 +1,15 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:management_system_flutter/data/api_service.dart';
 import 'package:management_system_flutter/page/home_page.dart';
+import 'package:management_system_flutter/page/regester_page.dart';
+import 'package:management_system_flutter/utils/page_util.dart';
+import 'package:management_system_flutter/widget/await_button%20copy.dart';
 import 'package:management_system_flutter/widget/login_input_widget.dart';
 import 'package:management_system_flutter/widget/common_button.dart';
+import 'package:http/http.dart' as http;
 
 void main() {
   runApp(const MyApp());
@@ -31,6 +39,13 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  var username = '';
+  var password = '';
+  @override
+  void initState() {
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -57,7 +72,11 @@ class _MyHomePageState extends State<MyHomePage> {
                 hintText: '请输入用户名',
                 iconData: Icons.perm_identity,
                 onChanged: (String value) {
-                  //_userName = value;
+                  if (value.isNotEmpty) {
+                    username = value;
+                  } else {
+                    username = '';
+                  }
                 },
               ),
               const Padding(padding: EdgeInsets.all(10.0)),
@@ -66,21 +85,31 @@ class _MyHomePageState extends State<MyHomePage> {
                 iconData: Icons.lock,
                 obscureText: true,
                 onChanged: (String value) {
-                  //_userName = value;
+                  if (value.isNotEmpty) {
+                    password = value;
+                  } else {
+                    password = '';
+                  }
                 },
               ),
               Row(
                 children: [
                   Expanded(
-                    child: CommonButton(
-                      text: "直接进入",
+                    child: AwaitButton(
+                      text: "登录",
                       color: Theme.of(context).primaryColor,
                       textColor: Colors.white,
                       fontSize: 16,
-                      onPress: (() {
-                        Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) {
-                          return const HomePage();
-                        }));
+                      onPress: (() async {
+                        ApiService.instance.checkCredentials(username, password).then((value) {
+                          if (value.statusCode == 200) {
+                            Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) {
+                              return const HomePage();
+                            }));
+                          } else {
+                            PageUtil.instance.showSingleBtnDialog(context, "错误", "用户名或密码错误", () {});
+                          }
+                        });
                       }),
                     ),
                   ),
@@ -88,17 +117,16 @@ class _MyHomePageState extends State<MyHomePage> {
                     width: 10,
                   ),
                   Expanded(
-                    child: CommonButton(
-                      text: "注册（暂无）",
-                      color: Theme.of(context).primaryColor,
-                      textColor: Colors.white,
-                      fontSize: 16,
-                      onPress: (() {
-                        // Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) {
-                        //   return const ListPage();
-                        // }));
-                      }),
-                    ),
+                    child: AwaitButton(
+                        text: "注册",
+                        color: Theme.of(context).primaryColor,
+                        textColor: Colors.white,
+                        fontSize: 16,
+                        onPress: () {
+                          Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) {
+                            return const RegisterPage();
+                          }));
+                        }),
                   ),
                 ],
               )

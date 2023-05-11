@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:management_system_flutter/data/data.dart';
 import 'package:management_system_flutter/page/item_page.dart';
 import 'package:management_system_flutter/widget/item_card.dart';
-
-import '../const/const.dart';
+import 'package:management_system_flutter/widget/multi_future_builder.dart';
+import 'package:management_system_flutter/const/const.dart';
 
 ///搜索器材列表页面
 class SearchItemListPage extends StatefulWidget {
@@ -20,14 +20,14 @@ class SearchItemListPage extends StatefulWidget {
 class _SearchItemListPageState extends State<SearchItemListPage> {
   var _searchType;
   var _itemSearchText;
-  var itemIds;
+  late Future<List<String>> _itemIds;
 
   @override
   void initState() {
     super.initState();
     _searchType = widget.searchType;
     _itemSearchText = widget.itemSearchText;
-    itemIds = ItemDataManager().SearchItemList(_itemSearchText, _searchType);
+    _itemIds = ItemDataManager().SearchItemList(_itemSearchText, _searchType);
   }
 
   @override
@@ -39,15 +39,19 @@ class _SearchItemListPageState extends State<SearchItemListPage> {
       _title1 = "按器材ID搜索:";
     }
     final String _title2 = _itemSearchText;
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("$_title1 $_title2"),
-      ),
-      body: getBodyView(),
-    );
+    return MultiFutureBuilder(
+        futures: [_itemIds],
+        builder: ((context, data) {
+          return Scaffold(
+            appBar: AppBar(
+              title: Text("$_title1 $_title2"),
+            ),
+            body: getBodyView(data[0]),
+          );
+        }));
   }
 
-  Widget getBodyView() {
+  Widget getBodyView(List<String> itemIds) {
     return RefreshIndicator(
       onRefresh: _onRefresh,
       child: ListView.builder(
@@ -61,7 +65,7 @@ class _SearchItemListPageState extends State<SearchItemListPage> {
                   _onRefresh();
                 });
               },
-              child: ItemCard(itemIds[index]));
+              child: ItemCard(itemId: itemIds[index]));
         },
         itemCount: itemIds.length,
       ),
@@ -74,6 +78,6 @@ class _SearchItemListPageState extends State<SearchItemListPage> {
   }
 
   refreshData() {
-    itemIds = ItemDataManager().getItemIdList();
+    _itemIds = ItemDataManager().getItemIdList();
   }
 }

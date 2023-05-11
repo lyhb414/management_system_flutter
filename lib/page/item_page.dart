@@ -2,10 +2,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:management_system_flutter/data/data.dart';
+import 'package:management_system_flutter/utils/page_util.dart';
+import 'package:management_system_flutter/widget/await_button%20copy.dart';
 import 'package:management_system_flutter/widget/common_button.dart';
 import 'package:management_system_flutter/page/borrow_page.dart';
-import 'package:management_system_flutter/page/action_history_page.dart';
 import 'package:management_system_flutter/const/const.dart';
+import 'package:management_system_flutter/widget/multi_future_builder.dart';
 
 import 'borrow_history_list_page.dart';
 import 'edit_page.dart';
@@ -21,26 +23,39 @@ class ItemPage extends StatefulWidget {
 
 class _ItemPageState extends State<ItemPage> {
   late final String _itemId;
+  late Future<ItemData?> _itemData;
 
   @override
   void initState() {
     super.initState();
     _itemId = widget.itemId;
+    fetchNetData();
   }
 
   @override
   Widget build(BuildContext context) {
-    final String _title = ItemDataManager().getItemById(_itemId)!.name;
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(_title),
-      ),
-      body: getBodyView(),
-    );
+    return MultiFutureBuilder(
+        futures: [_itemData],
+        builder: (BuildContext context, List<dynamic> data) {
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(data[0].name),
+              actions: <Widget>[
+                IconButton(
+                  icon: const Icon(Icons.refresh),
+                  onPressed: () {
+                    _onRefresh();
+                  },
+                ),
+              ],
+            ),
+            body: getBodyView(data[0]),
+          );
+        });
   }
 
-  Widget getBodyView() {
-    var remainNum = ItemDataManager().getItemById(_itemId)!.getRemainNum();
+  Widget getBodyView(ItemData? itemData) {
+    var remainNum = itemData!.getRemainNum();
     return RefreshIndicator(
       onRefresh: _onRefresh,
       child: Container(
@@ -49,11 +64,11 @@ class _ItemPageState extends State<ItemPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Padding(padding: EdgeInsets.all(5.0)),
-            Text("器材id: $_itemId"),
+            Text("器材id: ${itemData.equipId}"),
             const Padding(padding: EdgeInsets.all(5.0)),
-            Text("器材名称: ${ItemDataManager().getItemById(_itemId)!.name}"),
+            Text("器材名称: ${itemData.name}"),
             const Padding(padding: EdgeInsets.all(5.0)),
-            Text("总数: ${ItemDataManager().getItemById(_itemId)!.totalNum}"),
+            Text("总数: ${itemData.totalNum}"),
             const Padding(padding: EdgeInsets.all(5.0)),
             Text(
               "空闲数量: $remainNum",
@@ -62,7 +77,7 @@ class _ItemPageState extends State<ItemPage> {
               ),
             ),
             const Padding(padding: EdgeInsets.all(5.0)),
-            Text("器材位置: ${ItemDataManager().getItemById(_itemId)!.location}"),
+            Text("器材位置: ${itemData.location}"),
             const Padding(padding: EdgeInsets.all(10.0)),
             const Divider(
               height: 1.0,
@@ -132,23 +147,6 @@ class _ItemPageState extends State<ItemPage> {
                     });
                   }),
                 ),
-                const Padding(padding: EdgeInsets.all(5.0)),
-                CommonButton(
-                  text: "操作日志",
-                  color: Colors.orange,
-                  textColor: Colors.white,
-                  fontSize: 20,
-                  onPress: (() {
-                    Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) {
-                      return ActionHistoryPage(
-                        searchId: _itemId,
-                        searchType: HistorySearchType.ITEMID,
-                      );
-                    })).then((value) {
-                      _onRefresh();
-                    });
-                  }),
-                ),
               ],
             ),
             const Padding(padding: EdgeInsets.all(10.0)),
@@ -161,14 +159,21 @@ class _ItemPageState extends State<ItemPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Padding(padding: EdgeInsets.all(5.0)),
-                CommonButton(
+                AwaitButton(
                   text: "删除器材",
                   color: Colors.redAccent,
                   textColor: Colors.white,
                   fontSize: 20,
-                  onPress: (() {
-                    ItemDataManager().unregisterItem(_itemId);
-                    Navigator.pop(context);
+                  onPress: (() async {
+                    await ItemDataManager().unregisterItem(_itemId).then((value) {
+                      if (value.statusCode == 204) {
+                        PageUtil.instance.showSingleBtnDialog(context, "通知", "删除成功", () {
+                          Navigator.pop(context);
+                        });
+                      } else {
+                        PageUtil.instance.showSingleBtnDialog(context, "错误", value.body, () {});
+                      }
+                    });
                   }),
                 ),
               ],
@@ -180,7 +185,12 @@ class _ItemPageState extends State<ItemPage> {
     );
   }
 
+  fetchNetData() {
+    _itemData = ItemDataManager().getItemById(_itemId);
+  }
+
   Future<void> _onRefresh() async {
+    await fetchNetData();
     setState(() {});
   }
 }

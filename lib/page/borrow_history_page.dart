@@ -3,54 +3,77 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:management_system_flutter/data/data.dart';
-import 'package:management_system_flutter/widget/common_button.dart';
+import 'package:management_system_flutter/utils/page_util.dart';
+import 'package:management_system_flutter/widget/await_button%20copy.dart';
 import 'package:date_format/date_format.dart';
+import 'package:management_system_flutter/widget/multi_future_builder.dart';
 
 import '../widget/return_history_card.dart';
 
 //借用历史页面
 class BorrowHistoryPage extends StatefulWidget {
-  final BorrowHistory _history;
-  const BorrowHistoryPage(this._history, {super.key});
+  final String _historyId;
+  const BorrowHistoryPage(this._historyId, {super.key});
 
   @override
   _BorrowHistoryPageState createState() => _BorrowHistoryPageState();
 }
 
 class _BorrowHistoryPageState extends State<BorrowHistoryPage> {
-  late final BorrowHistory _history;
-  var _returnHistorys;
+  late final String _historyId = widget._historyId;
   var returnNum = -1;
+
+  late Future<Map<String, dynamic>> _netData;
 
   @override
   void initState() {
     super.initState();
-    _history = widget._history;
-    _returnHistorys = _history.returnHistorys;
+    _netData = fetchNetData();
+  }
+
+  Future<Map<String, dynamic>> fetchNetData() async {
+    var history = await ItemDataManager().getBorrowHistoryById(_historyId);
+    var itemId = history?.itemId;
+    var returnHistorys = history?.returnHistorys;
+
+    var item = await ItemDataManager().getItemById(itemId!);
+
+    return {'borrowHistory': history, 'returnHistorys': returnHistorys, 'itemName': item};
+  }
+
+  Future<void> _onRefresh() async {
+    _netData = fetchNetData();
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    //final String _itemName = ItemDataManager().getItemById(_itemId)!.name;
-    return Scaffold(
-        appBar: AppBar(
-          title: Text("借用历史: ${ItemDataManager().getItemById(_history.itemId)!.name}"),
-        ),
-        body: getBodyView(context));
+    return MultiFutureBuilder(
+        futures: [_netData],
+        builder: (BuildContext context, List<dynamic> data) {
+          return Scaffold(
+              appBar: AppBar(
+                title: Text("借用历史: ${data[0]['itemName']}"),
+              ),
+              body: getBodyView(context, data[0]));
+        });
   }
 
-  Widget getBodyView(BuildContext context) {
+  Widget getBodyView(BuildContext context, Map<String, dynamic> netData) {
+    var borrowHistory = netData['borrowHistory'];
+    var returnHistorys = netData['returnHistorys'];
+
     return ListView(
       children: <Widget>[
         const Padding(padding: EdgeInsets.all(10.0)),
         Column(
           children: [
             const Padding(padding: EdgeInsets.all(5.0)),
-            Text("已归还: ${_history.returnNum}/${_history.borrowNum}"),
+            Text("已归还: ${borrowHistory.returnNum}/${borrowHistory.borrowNum}"),
             const Padding(padding: EdgeInsets.all(5.0)),
-            Text("借用用户: ${_history.username}"),
+            Text("借用用户: ${borrowHistory.user}"),
             const Padding(padding: EdgeInsets.all(5.0)),
-            Text("借用时间: ${formatDate(_history.borrowTime, [
+            Text("借用时间: ${formatDate(borrowHistory.borrowTime, [
                   'yyyy',
                   '-',
                   'mm',
@@ -88,31 +111,41 @@ class _BorrowHistoryPageState extends State<BorrowHistoryPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                CommonButton(
+                AwaitButton(
                   text: "归还",
                   color: Theme.of(context).primaryColor,
                   textColor: Colors.white,
                   fontSize: 20,
-                  onPress: () {
+                  onPress: () async {
                     if (returnNum >= 0) {
-                      if (_history.returnItem(returnNum)) {
-                        Navigator.pop(context);
-                      }
+                      await borrowHistory.returnItem(returnNum).then((value) {
+                        _onRefresh();
+                        if (value.statusCode == 200) {
+                          PageUtil.instance.showSingleBtnDialog(context, "通知", "归还成功", () {});
+                        } else {
+                          PageUtil.instance.showSingleBtnDialog(context, "错误", value.body, () {});
+                        }
+                      });
                     } else {
-                      print("参数错误");
+                      PageUtil.instance.showSingleBtnDialog(context, "错误", "参数错误", () {});
                     }
                   },
                 ),
                 const Padding(padding: EdgeInsets.all(10.0)),
-                CommonButton(
+                AwaitButton(
                   text: "归还全部",
                   color: Theme.of(context).primaryColor,
                   textColor: Colors.white,
                   fontSize: 20,
-                  onPress: () {
-                    if (_history.returnAllItem()) {
-                      Navigator.pop(context);
-                    }
+                  onPress: () async {
+                    await borrowHistory.returnAllItem().then((value) {
+                      _onRefresh();
+                      if (value.statusCode == 200) {
+                        PageUtil.instance.showSingleBtnDialog(context, "通知", "归还成功", () {});
+                      } else {
+                        PageUtil.instance.showSingleBtnDialog(context, "错误", value.body, () {});
+                      }
+                    });
                   },
                 ),
               ],
@@ -125,15 +158,15 @@ class _BorrowHistoryPageState extends State<BorrowHistoryPage> {
             const Padding(padding: EdgeInsets.all(8.0)),
             SizedBox(
               height: 400,
-              child: _returnHistorys.length > 0
+              child: returnHistorys.length > 0
                   ? ListView.builder(
                       padding: const EdgeInsets.all(5.0),
                       itemBuilder: (context, index) {
                         return InkWell(
-                          child: ReturnHistoryCard(_returnHistorys[index]),
+                          child: ReturnHistoryCard(returnHistorys[index]),
                         );
                       },
-                      itemCount: _returnHistorys.length,
+                      itemCount: returnHistorys.length,
                     )
                   : null,
             ),

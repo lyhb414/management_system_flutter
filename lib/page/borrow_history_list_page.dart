@@ -5,6 +5,7 @@ import 'package:management_system_flutter/const/const.dart';
 import 'package:management_system_flutter/data/data.dart';
 import 'package:management_system_flutter/page/borrow_history_page.dart';
 import 'package:management_system_flutter/widget/borrow_history_card.dart';
+import 'package:management_system_flutter/widget/multi_future_builder.dart';
 
 ///借用历史页面
 class BorrowHistoryListPage extends StatefulWidget {
@@ -21,7 +22,8 @@ class _BorrowHistoryListPageState extends State<BorrowHistoryListPage> {
   var _searchId;
   var _searchType;
   var _isShowAppBar;
-  var _historys;
+  late Future<List<BorrowHistory>> _historys;
+  late String? _searchName;
 
   @override
   void initState() {
@@ -29,30 +31,26 @@ class _BorrowHistoryListPageState extends State<BorrowHistoryListPage> {
     _searchId = widget.searchId;
     _searchType = widget.searchType;
     _isShowAppBar = widget.isShowAppBar;
-    _historys = ItemDataManager().searchBorrowHistory(widget.searchId, widget.searchType);
+    refreshData();
   }
 
   @override
   Widget build(BuildContext context) {
-    final String _searchName;
-    if (_searchType == HistorySearchType.USERNAME) {
-      _searchName = _searchId;
-    } else if (_searchType == HistorySearchType.ITEMID) {
-      _searchName = ItemDataManager().getItemById(_searchId)!.name;
-    } else {
-      _searchName = "";
-    }
-    return Scaffold(
-      appBar: _isShowAppBar
-          ? AppBar(
-              title: Text("借用历史列表: $_searchName"),
-            )
-          : null,
-      body: getBodyView(),
-    );
+    return MultiFutureBuilder(
+        futures: [_historys],
+        builder: (BuildContext context, List<dynamic> data) {
+          return Scaffold(
+            appBar: _isShowAppBar
+                ? AppBar(
+                    title: Text("借用历史列表: $_searchName"),
+                  )
+                : null,
+            body: getBodyView(data),
+          );
+        });
   }
 
-  Widget getBodyView() {
+  Widget getBodyView(List<dynamic> data) {
     return RefreshIndicator(
       onRefresh: _onRefresh,
       child: ListView.builder(
@@ -61,16 +59,16 @@ class _BorrowHistoryListPageState extends State<BorrowHistoryListPage> {
           return InkWell(
               onTap: () {
                 Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) {
-                  return BorrowHistoryPage(_historys[index]);
+                  return BorrowHistoryPage(data[0][index].id);
                 })).then(
                   (value) {
                     _onRefresh();
                   },
                 );
               },
-              child: BorrowHistoryCard(_historys[index]));
+              child: BorrowHistoryCard(data[0][index]));
         },
-        itemCount: _historys.length,
+        itemCount: data[0].length,
       ),
     );
   }
@@ -82,5 +80,18 @@ class _BorrowHistoryListPageState extends State<BorrowHistoryListPage> {
 
   refreshData() {
     _historys = ItemDataManager().searchBorrowHistory(_searchId, _searchType);
+    getSearchName();
+  }
+
+  getSearchName() {
+    if (_searchType == HistorySearchType.USERNAME) {
+      _searchName = _searchId;
+    } else if (_searchType == HistorySearchType.ITEMID) {
+      ItemDataManager().getItemById(_searchId).then((value) {
+        _searchName = value?.name;
+      });
+    } else {
+      _searchName = "";
+    }
   }
 }

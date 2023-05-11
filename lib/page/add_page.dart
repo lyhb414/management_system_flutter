@@ -3,7 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:management_system_flutter/data/data.dart';
-import 'package:management_system_flutter/widget/common_button.dart';
+import 'package:management_system_flutter/utils/page_util.dart';
+import 'package:management_system_flutter/widget/await_button%20copy.dart';
 
 //添加器材页面
 class AddPage extends StatefulWidget {
@@ -14,10 +15,11 @@ class AddPage extends StatefulWidget {
 }
 
 class _AddPageState extends State<AddPage> {
-  var itemId = '';
+  var itemEquipId = '';
   var itemName = '';
   var itemTotalNum = -1;
   var itemLocation = "";
+  var itemDescription = '';
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +37,6 @@ class _AddPageState extends State<AddPage> {
         Column(
           children: [
             TextFormField(
-              inputFormatters: [FilteringTextInputFormatter.allow(RegExp("[0-9]"))],
               keyboardType: TextInputType.text,
               textInputAction: TextInputAction.done,
               decoration: const InputDecoration(
@@ -45,9 +46,9 @@ class _AddPageState extends State<AddPage> {
               ),
               onChanged: (value) {
                 if (value.isNotEmpty) {
-                  itemId = value;
+                  itemEquipId = value;
                 } else {
-                  itemId = '';
+                  itemEquipId = '';
                 }
               },
             ),
@@ -104,24 +105,46 @@ class _AddPageState extends State<AddPage> {
               },
             ),
             const Padding(padding: EdgeInsets.all(10.0)),
+            TextFormField(
+              keyboardType: TextInputType.text,
+              textInputAction: TextInputAction.done,
+              decoration: const InputDecoration(
+                hintText: '请输入器材描述',
+                labelText: '器材描述',
+                border: OutlineInputBorder(),
+              ),
+              onChanged: (value) {
+                if (value.isNotEmpty) {
+                  itemDescription = value;
+                } else {
+                  itemDescription = '';
+                }
+              },
+            ),
+            const Padding(padding: EdgeInsets.all(10.0)),
             Center(
-              child: CommonButton(
+              child: AwaitButton(
                 text: "添加",
                 color: Theme.of(context).primaryColor,
                 textColor: Colors.white,
                 fontSize: 20,
-                onPress: () {
-                  if ((itemId.isNotEmpty) &&
-                      (itemName.isNotEmpty) &&
-                      (itemTotalNum >= 0) &&
-                      (itemLocation.isNotEmpty)) {
-                    if (ItemDataManager().registerItem(itemId, itemName, itemTotalNum, itemLocation)) {
-                      Navigator.pop(context);
-                    } else {
-                      print("此id已使用");
-                    }
+                onPress: () async {
+                  if ((itemEquipId.isNotEmpty) && (itemName.isNotEmpty) && (itemTotalNum >= 0)) {
+                    await ItemDataManager()
+                        .registerItem(itemEquipId, itemName, itemTotalNum, itemLocation, itemDescription)
+                        .then((value) {
+                      if (value.statusCode == 201) {
+                        PageUtil.instance.showSingleBtnDialog(context, "通知", "添加成功", () {
+                          Navigator.pop(context);
+                        });
+                      } else {
+                        PageUtil.instance.showSingleBtnDialog(context, "错误", value.body, () {
+                          Navigator.pop(context);
+                        });
+                      }
+                    });
                   } else {
-                    print("添加参数错误");
+                    PageUtil.instance.showSingleBtnDialog(context, "错误", "添加参数错误", () {});
                   }
                 },
               ),

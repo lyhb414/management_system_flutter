@@ -1,80 +1,99 @@
 // ignore_for_file: avoid_print, non_constant_identifier_names
+import 'package:http/http.dart';
 import 'package:management_system_flutter/const/const.dart';
 
+import 'api_service.dart';
+
 class ItemData {
+  String id;
+  String equipId;
   String name;
   int totalNum;
   int borrowNum;
   String location;
-  String? addText = "";
+  String description = "None";
 
-  ItemData({required this.name, required this.totalNum, this.borrowNum = 0, this.addText, required this.location});
+  ItemData(
+      {required this.id,
+      required this.equipId,
+      required this.name,
+      required this.totalNum,
+      this.borrowNum = 0,
+      required this.description,
+      required this.location});
 
   int getRemainNum() {
     return totalNum - borrowNum;
   }
-}
 
-class ActionHistory {
-  String username;
-  String itemId;
-  String itemName;
-  int actionNum;
-  DateTime actionTime;
-  int actionType;
+  factory ItemData.fromJson(Map<String, dynamic> json) {
+    return ItemData(
+      id: json['id'].toString(),
+      equipId: json['equipId'].toString(),
+      name: json['name'],
+      totalNum: json['totalNum'],
+      borrowNum: json['borrowNum'],
+      location: json['location'],
+      description: json['description'],
+    );
+  }
 
-  ActionHistory({
-    required this.username,
-    required this.itemId,
-    required this.itemName,
-    required this.actionNum,
-    required this.actionTime,
-    required this.actionType,
-  });
+  Map<String, dynamic> toJsonMap() {
+    return {
+      'equipId': equipId,
+      'name': name,
+      'totalNum': totalNum,
+      'borrowNum': borrowNum,
+      'location': location,
+      'description': description,
+    };
+  }
 }
 
 class BorrowHistory {
-  String username;
+  String id;
+  String user;
   String itemId;
   int borrowNum;
-  DateTime borrowTime = DateTime.now();
-  List<ReturnHistory> returnHistorys = [];
-  int returnNum = 0;
-  bool isOver = false;
+  DateTime borrowTime;
+  List<ReturnHistory> returnHistorys;
+  int returnNum;
+  bool isOver;
 
   BorrowHistory({
-    required this.username,
+    required this.id,
+    required this.user,
     required this.itemId,
     required this.borrowNum,
+    required this.borrowTime,
+    required this.returnHistorys,
+    required this.returnNum,
+    required this.isOver,
   });
 
-  bool returnItem(int returnItemNum) {
-    if (returnItemNum > borrowNum - returnNum) {
-      print("归还数量大于此次借用需归还数量");
-      return false;
-    } else {
-      var time = DateTime.now();
-      ReturnHistory history = ReturnHistory(returnNum: returnItemNum, returnTime: time);
-      returnHistorys.add(history);
-      returnNum += returnItemNum;
+  factory BorrowHistory.fromJson(Map<String, dynamic> json) {
+    List<dynamic> returnHistorysJson = json['returnHistorys'];
+    List<ReturnHistory> returnHistorysList =
+        returnHistorysJson.map((returnHistoryJson) => ReturnHistory.fromJson(returnHistoryJson)).toList();
 
-      ItemDataManager().getItemById(itemId)!.borrowNum -= returnItemNum;
-      ItemDataManager().addActionHistory(itemId, returnItemNum, ActionType.RETURN);
-    }
-    if (returnNum == borrowNum) {
-      isOver = true;
-    }
-    return true;
+    return BorrowHistory(
+      id: json['id'].toString(),
+      user: json['user'],
+      itemId: json['itemId'].toString(),
+      borrowNum: json['borrowNum'],
+      borrowTime: DateTime.parse(json['borrowTime']).toLocal(),
+      returnHistorys: returnHistorysList,
+      returnNum: json['returnNum'],
+      isOver: json['isOver'],
+    );
   }
 
-  bool returnAllItem() {
-    if (isOver) {
-      print("本次借用已完毕，无需归还");
-      return false;
-    } else {
-      returnItem(borrowNum - returnNum);
-      return true;
-    }
+  Future<Response> returnItem(int returnItemNum) async {
+    return ApiService.instance.returnEquipment(id, returnItemNum);
+  }
+
+  Future<Response> returnAllItem() async {
+    return ApiService.instance.returnAllEquipment(id);
   }
 }
 
@@ -86,6 +105,13 @@ class ReturnHistory {
     required this.returnNum,
     required this.returnTime,
   });
+
+  factory ReturnHistory.fromJson(Map<String, dynamic> json) {
+    return ReturnHistory(
+      returnNum: json['returnNum'],
+      returnTime: DateTime.parse(json['returnTime']).toLocal(),
+    );
+  }
 }
 
 class ItemDataManager {
@@ -99,151 +125,69 @@ class ItemDataManager {
   ///构造函数私有化，防止被误创建
   ItemDataManager._internal();
 
-  static String myUsername = "test admin";
-
   String getMyUserName() {
-    return myUsername;
+    return ApiService.instance.username;
   }
 
-  final Map<String, ItemData> _itemDatas = {
-    "1": ItemData(
-      name: "器材a",
-      totalNum: 10,
-      location: "位置a",
-    ),
-    "2": ItemData(
-      name: "器材b",
-      totalNum: 20,
-      location: "位置b",
-    ),
-  };
-
-  final List<ActionHistory> actionHistorys = [];
-
-  final List<BorrowHistory> borrowHistorys = [];
-
-  bool registerItem(String itemId, String itemName, int itemTotalNum, String itemLocation) {
-    if (_itemDatas.containsKey(itemId)) {
-      return false;
-    }
-
-    var item = ItemData(name: itemName, totalNum: itemTotalNum, location: itemLocation);
-    _itemDatas[itemId] = item;
-    return true;
+  Future<Response> registerItem(
+      String equipId, String itemName, int itemTotalNum, String itemLocation, String itemDescription) {
+    Map<String, dynamic> equipmentData = {
+      'equipId': equipId,
+      'name': itemName,
+      'totalNum': itemTotalNum,
+      'borrowNum': 0,
+      'location': itemLocation,
+      'description': itemDescription,
+    };
+    return ApiService.instance.createEquipment(equipmentData);
   }
 
-  unregisterItem(String itemId) {
-    borrowHistorys.removeWhere((element) {
-      return element.itemId == itemId;
-    });
-    _itemDatas.remove(itemId);
+  Future<Response> unregisterItem(String itemId) {
+    return ApiService.instance.deleteEquipment(itemId);
   }
 
-  ItemData? getItemById(String itemId) {
-    return _itemDatas[itemId];
+  Future<ItemData?> getItemById(String itemId) async {
+    var item = await ApiService.instance.getEquipment(itemId);
+    return item;
   }
 
-  List<String> getItemIdList() {
-    return _itemDatas.keys.toList();
+  Future<List<String>> getItemIdList() async {
+    List<String> equipmentIds = await ApiService.instance.getEquipmentIdList();
+    return equipmentIds;
   }
 
-  addItemNum(String itemId, int num) {
-    _itemDatas[itemId]!.totalNum += num;
-    addActionHistory(itemId, num, ActionType.ADD);
+  Future<Response> borrowItem(String itemId, int num) async {
+    return ApiService.instance.borrowEquipment(itemId, num);
   }
 
-  removeItemNum(String itemId, int num) {
-    if (_itemDatas[itemId]!.getRemainNum() < num) {
-      print("减少数量大于空余数量");
-      return false;
-    }
-    _itemDatas[itemId]!.totalNum -= num;
-    addActionHistory(itemId, num, ActionType.REMOVE);
+  Future<BorrowHistory?> getBorrowHistoryById(String borrowHistoryId) async {
+    var borrowHistory = await ApiService.instance.getBorrowHistory(borrowHistoryId);
+    return borrowHistory;
   }
 
-  bool borrowItem(String itemId, int num) {
-    if (_itemDatas[itemId]!.getRemainNum() < num) {
-      print("减少数量大于空余数量");
-      return false;
-    } else if (num < 0) {
-      print("借用数量需大于0");
-      return false;
-    } else {
-      _itemDatas[itemId]!.borrowNum += num;
-      addActionHistory(itemId, num, ActionType.BORROW);
-      borrowHistorys.add(BorrowHistory(username: myUsername, itemId: itemId, borrowNum: num));
-      return true;
-    }
-  }
-
-  addActionHistory(String itemId, int actionNum, int actionType) {
-    var time = DateTime.now();
-
-    var history = ActionHistory(
-      username: myUsername,
-      itemId: itemId,
-      itemName: getItemById(itemId)!.name,
-      actionNum: actionNum,
-      actionTime: time,
-      actionType: actionType,
-    );
-    actionHistorys.add(history);
-  }
-
-  List<String> SearchItemList(String itemSearchText, int searchType) {
+  Future<List<String>> SearchItemList(String itemSearchText, int searchType) async {
     List<String> result = [];
+    List<ItemData> items = [];
     if (searchType == ItemSearchType.ITEMNAME) {
-      _itemDatas.forEach((key, value) {
-        if (value.name.contains(itemSearchText)) {
-          result.add(key);
-        }
-      });
+      items = await ApiService.instance.searchEquipment(itemSearchText, 'name');
     } else if (searchType == ItemSearchType.ITEMID) {
-      _itemDatas.forEach((key, value) {
-        if (key.contains(itemSearchText)) {
-          result.add(key);
-        }
-      });
+      items = await ApiService.instance.searchEquipment(itemSearchText, 'equipId');
+    }
+    for (var value in items) {
+      result.add(value.id);
     }
     return result;
   }
 
-  List<ActionHistory> searchActionHistory(String searchId, int searchType) {
-    List<ActionHistory> result = [];
-    if (searchType == HistorySearchType.USERNAME) {
-      for (var element in actionHistorys) {
-        if (element.username == searchId) {
-          result.add(element);
-        }
-      }
-    } else if (searchType == HistorySearchType.ITEMID) {
-      for (var element in actionHistorys) {
-        if (element.itemId == searchId) {
-          result.add(element);
-        }
-      }
-    }
-    result.sort((left, right) {
-      return left.actionTime.isBefore(right.actionTime) ? 1 : -1;
-    });
-    return result;
-  }
-
-  List<BorrowHistory> searchBorrowHistory(String searchId, int searchType) {
+  Future<List<BorrowHistory>> searchBorrowHistory(String searchId, int searchType) async {
+    print(searchId);
     List<BorrowHistory> result = [];
     if (searchType == HistorySearchType.USERNAME) {
-      for (var element in borrowHistorys) {
-        if (element.username == searchId) {
-          result.add(element);
-        }
-      }
+      result = await ApiService.instance.searchBorrowHistory(searchId, 'user');
     } else if (searchType == HistorySearchType.ITEMID) {
-      for (var element in borrowHistorys) {
-        if (element.itemId == searchId) {
-          result.add(element);
-        }
-      }
+      result = await ApiService.instance.searchBorrowHistory(searchId, 'itemId');
     }
+
     result.sort((left, right) {
       if (left.isOver ^ right.isOver) {
         return left.isOver ? 1 : -1;
@@ -254,15 +198,15 @@ class ItemDataManager {
     return result;
   }
 
-  bool editItem(String itemId, String itemName, int itemTotalNum, String itemLocation) {
-    var item = getItemById(itemId);
-    if (item!.borrowNum >= itemTotalNum) {
-      print("修改后的总数小于已借出的数量");
-      return false;
-    }
-    item.name = itemName;
-    item.totalNum = itemTotalNum;
-    item.location = itemLocation;
-    return true;
+  Future<Response> editItem(
+      String id, String equipId, String itemName, int itemTotalNum, String itemLocation, String itemDescription) async {
+    ItemData tmpData = ItemData(
+        id: id,
+        equipId: equipId,
+        name: itemName,
+        totalNum: itemTotalNum,
+        location: itemLocation,
+        description: itemDescription);
+    return ApiService.instance.updateEquipment(tmpData);
   }
 }

@@ -3,7 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:management_system_flutter/data/data.dart';
-import 'package:management_system_flutter/widget/common_button.dart';
+import 'package:management_system_flutter/utils/page_util.dart';
+import 'package:management_system_flutter/widget/await_button%20copy.dart';
+import 'package:management_system_flutter/widget/multi_future_builder.dart';
 
 //借用器材页面
 class BorrowPage extends StatefulWidget {
@@ -15,27 +17,35 @@ class BorrowPage extends StatefulWidget {
 }
 
 class _BorrowPageState extends State<BorrowPage> {
-  late final String _itemId;
+  late final String _itemId = widget.itemId;
   var borrowNum = -1;
+  late Future<ItemData?> _itemData;
 
   @override
   void initState() {
     super.initState();
-    _itemId = widget.itemId;
+    fetchNetData();
+  }
+
+  fetchNetData() {
+    _itemData = ItemDataManager().getItemById(_itemId);
   }
 
   @override
   Widget build(BuildContext context) {
-    final String _itemName = ItemDataManager().getItemById(_itemId)!.name;
-    return Scaffold(
-        appBar: AppBar(
-          title: Text("借用:$_itemName"),
-        ),
-        body: getBodyView(context));
+    return MultiFutureBuilder(
+        futures: [_itemData],
+        builder: (BuildContext context, List<dynamic> data) {
+          return Scaffold(
+              appBar: AppBar(
+                title: Text("借用:${data[0].name}"),
+              ),
+              body: getBodyView(context, data[0]));
+        });
   }
 
-  Widget getBodyView(BuildContext context) {
-    var remainNum = ItemDataManager().getItemById(_itemId)!.getRemainNum();
+  Widget getBodyView(BuildContext context, ItemData itemData) {
+    var remainNum = itemData.getRemainNum();
     return ListView(
       children: <Widget>[
         const Padding(padding: EdgeInsets.all(20.0)),
@@ -67,18 +77,26 @@ class _BorrowPageState extends State<BorrowPage> {
             ),
             const Padding(padding: EdgeInsets.all(10.0)),
             Center(
-              child: CommonButton(
+              child: AwaitButton(
                 text: "借用",
                 color: Theme.of(context).primaryColor,
                 textColor: Colors.white,
                 fontSize: 20,
-                onPress: () {
+                onPress: () async {
                   if (borrowNum > 0) {
-                    if (ItemDataManager().borrowItem(_itemId, borrowNum)) {
-                      Navigator.pop(context);
-                    }
+                    await ItemDataManager().borrowItem(_itemId, borrowNum).then((value) {
+                      if (value.statusCode == 200) {
+                        PageUtil.instance.showSingleBtnDialog(context, "通知", "借用成功", () {
+                          Navigator.pop(context);
+                        });
+                      } else {
+                        PageUtil.instance.showSingleBtnDialog(context, "错误", value.body, () {
+                          Navigator.pop(context);
+                        });
+                      }
+                    });
                   } else {
-                    print("参数错误");
+                    PageUtil.instance.showSingleBtnDialog(context, "错误", "参数错误", () {});
                   }
                 },
               ),

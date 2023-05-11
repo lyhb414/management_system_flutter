@@ -1,14 +1,13 @@
 // ignore_for_file: library_private_types_in_public_api
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:management_system_flutter/page/list_page.dart';
 import 'package:management_system_flutter/page/search_item_page.dart';
 import 'package:management_system_flutter/page/user_page.dart';
-
-import '../const/const.dart';
-import '../data/data.dart';
-import 'borrow_history_list_page.dart';
-import 'dart:io';
+import 'package:management_system_flutter/const/const.dart';
+import 'package:management_system_flutter/data/data.dart';
+import 'package:management_system_flutter/page/borrow_history_list_page.dart';
 
 ///主页页面
 class HomePage extends StatefulWidget {
@@ -104,7 +103,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _doQuit() async {
-    //await SystemChannels.platform.invokeMethod('SystemNavigator.pop');
-    exit(0);
+    await SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+    //exit(0);
   }
 }

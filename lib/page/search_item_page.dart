@@ -4,8 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:management_system_flutter/const/const.dart';
 import 'package:management_system_flutter/page/search_item_list_page.dart';
 import 'package:management_system_flutter/widget/common_button.dart';
-
-import '../widget/custom_dropdown_button.dart';
+import 'package:management_system_flutter/widget/custom_dropdown_button.dart';
 
 //搜索器材页面
 class SearchItemPage extends StatefulWidget {
