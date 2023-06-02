@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:management_system_flutter/const/const.dart';
 import 'package:management_system_flutter/page/search_item_list_page.dart';
+import 'package:management_system_flutter/utils/page_util.dart';
 import 'package:management_system_flutter/widget/common_button.dart';
 import 'package:management_system_flutter/widget/custom_dropdown_button.dart';
 
@@ -101,7 +102,7 @@ class _SearchItemPageState extends State<SearchItemPage> {
                       return SearchItemListPage(searchType: _value as int, itemSearchText: itemSearchText);
                     }));
                   } else {
-                    print("添加参数错误");
+                    PageUtil.instance.showSingleBtnDialog(context, "错误", "参数错误", () {});
                   }
                 },
               ),

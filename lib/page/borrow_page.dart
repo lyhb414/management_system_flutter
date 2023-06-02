@@ -28,7 +28,7 @@ class _BorrowPageState extends State<BorrowPage> {
   }
 
   fetchNetData() {
-    _itemData = ItemDataManager().getItemById(_itemId);
+    _itemData = DataManager().getItemById(_itemId);
   }
 
   @override
@@ -84,17 +84,19 @@ class _BorrowPageState extends State<BorrowPage> {
                 fontSize: 20,
                 onPress: () async {
                   if (borrowNum > 0) {
-                    await ItemDataManager().borrowItem(_itemId, borrowNum).then((value) {
-                      if (value.statusCode == 200) {
-                        PageUtil.instance.showSingleBtnDialog(context, "通知", "借用成功", () {
-                          Navigator.pop(context);
-                        });
-                      } else {
-                        PageUtil.instance.showSingleBtnDialog(context, "错误", value.body, () {
-                          Navigator.pop(context);
-                        });
-                      }
-                    });
+                    PageUtil.instance.showDoubleBtnDialog(context, '', '是否确认借用？', () async {
+                      await DataManager().borrowItem(_itemId, borrowNum).then((value) {
+                        if (value.statusCode == 200) {
+                          PageUtil.instance.showSingleBtnDialog(context, "通知", "借用成功", () {
+                            Navigator.pop(context);
+                          });
+                        } else {
+                          PageUtil.instance.showSingleBtnDialog(context, "错误", value.body, () {
+                            Navigator.pop(context);
+                          });
+                        }
+                      });
+                    }, () {});
                   } else {
                     PageUtil.instance.showSingleBtnDialog(context, "错误", "参数错误", () {});
                   }

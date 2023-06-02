@@ -5,17 +5,17 @@ class PageUtil {
   static final PageUtil instance = PageUtil._privateConstructor();
 
   Future<void> showDoubleBtnDialog(
-      BuildContext context, String successTitle, String successText, Function confirmFunc, Function cancleFunc) {
+      BuildContext context, String title, String text, Function confirmFunc, Function cancleFunc) {
     return showDialog<void>(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(successTitle),
+          title: Text(title),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
-                Text(successText),
+                Text(text),
               ],
             ),
           ),
@@ -40,18 +40,17 @@ class PageUtil {
     );
   }
 
-  Future<void> showSingleBtnDialog(
-      BuildContext context, String successTitle, String successText, Function confirmFunc) {
+  Future<void> showSingleBtnDialog(BuildContext context, String title, String text, Function confirmFunc) {
     return showDialog<void>(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(successTitle),
+          title: Text(title),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
-                Text(successText),
+                Text(text),
               ],
             ),
           ),

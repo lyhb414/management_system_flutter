@@ -21,7 +21,7 @@ class _ItemCardState extends State<ItemCard> {
   void initState() {
     super.initState();
     _itemId = widget.itemId;
-    _itemData = ItemDataManager().getItemById(_itemId);
+    _itemData = DataManager().getItemById(_itemId);
   }
 
   @override

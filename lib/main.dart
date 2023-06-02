@@ -1,15 +1,12 @@
-import 'dart:async';
-import 'dart:io';
-
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:management_system_flutter/data/api_service.dart';
+import 'package:management_system_flutter/data/data.dart';
 import 'package:management_system_flutter/page/home_page.dart';
 import 'package:management_system_flutter/page/regester_page.dart';
 import 'package:management_system_flutter/utils/page_util.dart';
 import 'package:management_system_flutter/widget/await_button%20copy.dart';
 import 'package:management_system_flutter/widget/login_input_widget.dart';
-import 'package:management_system_flutter/widget/common_button.dart';
-import 'package:http/http.dart' as http;
 
 void main() {
   runApp(const MyApp());
@@ -21,6 +18,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(
         primarySwatch: Colors.blue,
@@ -71,6 +69,7 @@ class _MyHomePageState extends State<MyHomePage> {
               LoginInputWidget(
                 hintText: '请输入用户名',
                 iconData: Icons.perm_identity,
+                inputFormatters: [FilteringTextInputFormatter.allow(RegExp("[a-zA-Z0-9]"))],
                 onChanged: (String value) {
                   if (value.isNotEmpty) {
                     username = value;
@@ -101,6 +100,8 @@ class _MyHomePageState extends State<MyHomePage> {
                       textColor: Colors.white,
                       fontSize: 16,
                       onPress: (() async {
+                        // username = 'user';
+                        // password = '11112222';
                         ApiService.instance.checkCredentials(username, password).then((value) {
                           if (value.statusCode == 200) {
                             Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) {
@@ -122,7 +123,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         color: Theme.of(context).primaryColor,
                         textColor: Colors.white,
                         fontSize: 16,
-                        onPress: () {
+                        onPress: () async {
                           Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) {
                             return const RegisterPage();
                           }));

@@ -27,10 +27,13 @@ class _EditPageState extends State<EditPage> {
   var defaultItemTotalNum = -1;
   var itemLocation = '';
   var defaultItemLocation = '';
+  var itemDescription = '';
+  var defaultItemDescription = '';
   late TextEditingController _equipIdController;
   late TextEditingController _nameController;
   late TextEditingController _numController;
   late TextEditingController _locationController;
+  late TextEditingController _descriptionController;
 
   late Future<ItemData?> _itemData;
 
@@ -38,13 +41,13 @@ class _EditPageState extends State<EditPage> {
   void initState() {
     super.initState();
 
-    _itemData = ItemDataManager().getItemById(_itemId).then((value) {
+    _itemData = DataManager().getItemById(_itemId).then((value) {
       setState(() {
         defaultItemEquipId = value!.equipId;
         itemEquipId = defaultItemEquipId;
         _equipIdController = TextEditingController(text: defaultItemEquipId);
 
-        defaultItemName = value!.name;
+        defaultItemName = value.name;
         itemName = defaultItemName;
         _nameController = TextEditingController(text: defaultItemName);
 
@@ -55,6 +58,10 @@ class _EditPageState extends State<EditPage> {
         defaultItemLocation = value.location;
         itemLocation = defaultItemLocation;
         _locationController = TextEditingController(text: defaultItemLocation);
+
+        defaultItemDescription = value.description;
+        itemDescription = defaultItemDescription;
+        _descriptionController = TextEditingController(text: defaultItemDescription);
       });
       return value;
     });
@@ -153,6 +160,24 @@ class _EditPageState extends State<EditPage> {
               },
             ),
             const Padding(padding: EdgeInsets.all(10.0)),
+            TextFormField(
+              controller: _descriptionController,
+              keyboardType: TextInputType.text,
+              textInputAction: TextInputAction.done,
+              decoration: const InputDecoration(
+                hintText: '请输入备注',
+                labelText: '备注',
+                border: OutlineInputBorder(),
+              ),
+              onChanged: (value) {
+                if (value.isNotEmpty) {
+                  itemDescription = value;
+                } else {
+                  itemDescription = '';
+                }
+              },
+            ),
+            const Padding(padding: EdgeInsets.all(10.0)),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -163,16 +188,18 @@ class _EditPageState extends State<EditPage> {
                   textColor: Colors.white,
                   fontSize: 20,
                   onPress: () async {
-                    if ((itemName.isNotEmpty) && (itemTotalNum >= 0) && (itemLocation.isNotEmpty)) {
-                      await ItemDataManager()
-                          .editItem(_itemId, itemEquipId, itemName, itemTotalNum, itemLocation, "")
-                          .then((value) {
-                        if (value.statusCode == 200) {
-                          PageUtil.instance.showSingleBtnDialog(context, "通知", "编辑成功", () {});
-                        } else {
-                          PageUtil.instance.showSingleBtnDialog(context, "错误", value.body, () {});
-                        }
-                      });
+                    if ((itemName.isNotEmpty) && (itemTotalNum >= 0)) {
+                      PageUtil.instance.showDoubleBtnDialog(context, '', '是否确认编辑？', () async {
+                        await DataManager()
+                            .editItem(_itemId, itemEquipId, itemName, itemTotalNum, itemLocation, itemDescription)
+                            .then((value) {
+                          if (value.statusCode == 200) {
+                            PageUtil.instance.showSingleBtnDialog(context, "通知", "编辑成功", () {});
+                          } else {
+                            PageUtil.instance.showSingleBtnDialog(context, "错误", value.body, () {});
+                          }
+                        });
+                      }, () {});
                     } else {
                       PageUtil.instance.showSingleBtnDialog(context, "错误", "输入参数错误", () {});
                     }
@@ -185,6 +212,16 @@ class _EditPageState extends State<EditPage> {
                   textColor: Colors.white,
                   fontSize: 20,
                   onPress: () {
+                    itemEquipId = defaultItemEquipId;
+                    itemName = defaultItemName;
+                    itemTotalNum = defaultItemTotalNum;
+                    itemLocation = defaultItemLocation;
+                    itemDescription = defaultItemDescription;
+
+                    _equipIdController.value = TextEditingValue(
+                        text: defaultItemEquipId,
+                        selection: TextSelection.fromPosition(
+                            TextPosition(affinity: TextAffinity.downstream, offset: defaultItemEquipId.length)));
                     _nameController.value = TextEditingValue(
                         text: defaultItemName,
                         selection: TextSelection.fromPosition(
@@ -197,6 +234,10 @@ class _EditPageState extends State<EditPage> {
                         text: defaultItemLocation.toString(),
                         selection: TextSelection.fromPosition(TextPosition(
                             affinity: TextAffinity.downstream, offset: defaultItemLocation.toString().length)));
+                    _descriptionController.value = TextEditingValue(
+                        text: defaultItemDescription.toString(),
+                        selection: TextSelection.fromPosition(TextPosition(
+                            affinity: TextAffinity.downstream, offset: defaultItemDescription.toString().length)));
                   },
                 ),
               ],

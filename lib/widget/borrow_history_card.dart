@@ -10,21 +10,28 @@ class BorrowHistoryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiFutureBuilder(
-        futures: [getName()],
+        futures: [getName(), getFirstName()],
         builder: (BuildContext context, List<dynamic> data) {
-          return getCard(data[0]);
+          return getCard(data[0], data[1]);
         });
   }
 
   Future<String?> getName() async {
-    var item = await ItemDataManager().getItemById(_history.itemId);
+    var item = await DataManager().getItemById(_history.itemId);
     return item?.name;
   }
 
-  Widget getCard(String itemName) {
+  Future<String?> getFirstName() async {
+    var firstname = await DataManager().getFirstName(_history.user);
+    return firstname;
+  }
+
+  Widget getCard(String itemName, String firstname) {
     return Center(
       child: Card(
-        color: _history.isOver ? Colors.grey : Colors.yellowAccent,
+        color: _history.isOver
+            ? Colors.grey
+            : (_history.user == DataManager().getMyUserName() ? Colors.redAccent : Colors.yellowAccent),
         elevation: 2.0,
         shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10.0))),
         child: Container(
@@ -38,7 +45,7 @@ class BorrowHistoryCard extends StatelessWidget {
               const Padding(padding: EdgeInsets.all(5.0)),
               Text("归还数量: ${_history.returnNum} / ${_history.borrowNum}"),
               const Padding(padding: EdgeInsets.all(5.0)),
-              Text("借用用户: ${_history.user}"),
+              Text("借用用户: $firstname"),
               const Padding(padding: EdgeInsets.all(5.0)),
               Text("借用时间: ${formatDate(_history.borrowTime, [
                     'yyyy',

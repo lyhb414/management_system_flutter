@@ -1,7 +1,7 @@
 // ignore_for_file: library_private_types_in_public_api
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:management_system_flutter/data/api_service.dart';
 import 'package:management_system_flutter/page/list_page.dart';
 import 'package:management_system_flutter/page/search_item_page.dart';
 import 'package:management_system_flutter/page/user_page.dart';
@@ -22,7 +22,7 @@ class _HomePageState extends State<HomePage> {
   List pageList = [
     const ListPage(),
     BorrowHistoryListPage(
-      searchId: ItemDataManager().getMyUserName(),
+      searchId: DataManager().getMyUserName(),
       searchType: HistorySearchType.USERNAME,
       isShowAppBar: false,
     ),
@@ -71,7 +71,7 @@ class _HomePageState extends State<HomePage> {
             ListTile(
               leading: const Icon(Icons.exit_to_app),
               title: const Text(
-                '退出',
+                '退出登陆',
                 style: TextStyle(
                   color: Colors.black,
                   fontSize: 20,
@@ -102,8 +102,9 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void _doQuit() async {
-    await SystemChannels.platform.invokeMethod('SystemNavigator.pop');
-    //exit(0);
+  void _doQuit() {
+    ApiService.instance.Logout();
+    Navigator.of(context).pop();
+    Navigator.of(context).pop();
   }
 }

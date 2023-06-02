@@ -87,6 +87,6 @@ class _ListPageState extends State<ListPage> {
   }
 
   void refreshData() {
-    itemIds = ItemDataManager().getItemIdList();
+    itemIds = DataManager().getItemIdList();
   }
 }

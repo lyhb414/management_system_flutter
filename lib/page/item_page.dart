@@ -1,6 +1,7 @@
 // ignore_for_file: no_leading_underscores_for_local_identifiers, must_be_immutable, library_private_types_in_public_api
 
 import 'package:flutter/material.dart';
+import 'package:management_system_flutter/data/api_service.dart';
 import 'package:management_system_flutter/data/data.dart';
 import 'package:management_system_flutter/utils/page_util.dart';
 import 'package:management_system_flutter/widget/await_button%20copy.dart';
@@ -24,6 +25,7 @@ class ItemPage extends StatefulWidget {
 class _ItemPageState extends State<ItemPage> {
   late final String _itemId;
   late Future<ItemData?> _itemData;
+  late Future<bool?> _selfIsAdmin;
 
   @override
   void initState() {
@@ -35,7 +37,7 @@ class _ItemPageState extends State<ItemPage> {
   @override
   Widget build(BuildContext context) {
     return MultiFutureBuilder(
-        futures: [_itemData],
+        futures: [_itemData, _selfIsAdmin],
         builder: (BuildContext context, List<dynamic> data) {
           return Scaffold(
             appBar: AppBar(
@@ -49,12 +51,12 @@ class _ItemPageState extends State<ItemPage> {
                 ),
               ],
             ),
-            body: getBodyView(data[0]),
+            body: getBodyView(data[0], data[1]),
           );
         });
   }
 
-  Widget getBodyView(ItemData? itemData) {
+  Widget getBodyView(ItemData? itemData, bool isAdmin) {
     var remainNum = itemData!.getRemainNum();
     return RefreshIndicator(
       onRefresh: _onRefresh,
@@ -78,6 +80,8 @@ class _ItemPageState extends State<ItemPage> {
             ),
             const Padding(padding: EdgeInsets.all(5.0)),
             Text("器材位置: ${itemData.location}"),
+            const Padding(padding: EdgeInsets.all(5.0)),
+            Text("备注: ${itemData.description}"),
             const Padding(padding: EdgeInsets.all(10.0)),
             const Divider(
               height: 1.0,
@@ -132,50 +136,51 @@ class _ItemPageState extends State<ItemPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Padding(padding: EdgeInsets.all(5.0)),
-                CommonButton(
-                  text: "编辑",
-                  color: Colors.orange,
-                  textColor: Colors.white,
-                  fontSize: 20,
-                  onPress: (() {
-                    Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) {
-                      return EditPage(
-                        itemId: _itemId,
-                      );
-                    })).then((value) {
-                      _onRefresh();
-                    });
-                  }),
-                ),
-              ],
-            ),
-            const Padding(padding: EdgeInsets.all(10.0)),
-            const Divider(
-              height: 1.0,
-              color: Colors.blue,
-            ),
-            const Padding(padding: EdgeInsets.all(10.0)),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
+                isAdmin
+                    ? CommonButton(
+                        text: "编辑",
+                        color: Colors.orange,
+                        textColor: Colors.white,
+                        fontSize: 20,
+                        onPress: (() {
+                          Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) {
+                            return EditPage(
+                              itemId: _itemId,
+                            );
+                          })).then((value) {
+                            _onRefresh();
+                          });
+                        }),
+                      )
+                    : Visibility(
+                        visible: false,
+                        child: Container(),
+                      ),
                 const Padding(padding: EdgeInsets.all(5.0)),
-                AwaitButton(
-                  text: "删除器材",
-                  color: Colors.redAccent,
-                  textColor: Colors.white,
-                  fontSize: 20,
-                  onPress: (() async {
-                    await ItemDataManager().unregisterItem(_itemId).then((value) {
-                      if (value.statusCode == 204) {
-                        PageUtil.instance.showSingleBtnDialog(context, "通知", "删除成功", () {
-                          Navigator.pop(context);
-                        });
-                      } else {
-                        PageUtil.instance.showSingleBtnDialog(context, "错误", value.body, () {});
-                      }
-                    });
-                  }),
-                ),
+                isAdmin
+                    ? AwaitButton(
+                        text: "删除器材",
+                        color: Colors.redAccent,
+                        textColor: Colors.white,
+                        fontSize: 20,
+                        onPress: (() async {
+                          PageUtil.instance.showDoubleBtnDialog(context, '', '是否确认删除？', () async {
+                            await DataManager().unregisterItem(_itemId).then((value) {
+                              if (value.statusCode == 204) {
+                                PageUtil.instance.showSingleBtnDialog(context, "通知", "删除成功", () {
+                                  Navigator.pop(context);
+                                });
+                              } else {
+                                PageUtil.instance.showSingleBtnDialog(context, "错误", value.body, () {});
+                              }
+                            });
+                          }, () {});
+                        }),
+                      )
+                    : Visibility(
+                        visible: false,
+                        child: Container(),
+                      ),
               ],
             ),
             const Padding(padding: EdgeInsets.all(10.0)),
@@ -186,7 +191,8 @@ class _ItemPageState extends State<ItemPage> {
   }
 
   fetchNetData() {
-    _itemData = ItemDataManager().getItemById(_itemId);
+    _itemData = DataManager().getItemById(_itemId);
+    _selfIsAdmin = ApiService.instance.checkAdmin();
   }
 
   Future<void> _onRefresh() async {

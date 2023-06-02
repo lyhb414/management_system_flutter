@@ -79,7 +79,7 @@ class _BorrowHistoryListPageState extends State<BorrowHistoryListPage> {
   }
 
   refreshData() {
-    _historys = ItemDataManager().searchBorrowHistory(_searchId, _searchType);
+    _historys = DataManager().searchBorrowHistory(_searchId, _searchType);
     getSearchName();
   }
 
@@ -87,7 +87,7 @@ class _BorrowHistoryListPageState extends State<BorrowHistoryListPage> {
     if (_searchType == HistorySearchType.USERNAME) {
       _searchName = _searchId;
     } else if (_searchType == HistorySearchType.ITEMID) {
-      ItemDataManager().getItemById(_searchId).then((value) {
+      DataManager().getItemById(_searchId).then((value) {
         _searchName = value?.name;
       });
     } else {

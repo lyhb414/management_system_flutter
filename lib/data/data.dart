@@ -28,13 +28,13 @@ class ItemData {
 
   factory ItemData.fromJson(Map<String, dynamic> json) {
     return ItemData(
-      id: json['id'].toString(),
-      equipId: json['equipId'].toString(),
-      name: json['name'],
-      totalNum: json['totalNum'],
-      borrowNum: json['borrowNum'],
-      location: json['location'],
-      description: json['description'],
+      id: (json['id'] ?? 0).toString(),
+      equipId: (json['equipId'] ?? 0).toString(),
+      name: json['name'] ?? 'null',
+      totalNum: json['totalNum'] ?? 0,
+      borrowNum: json['borrowNum'] ?? 0,
+      location: json['location'] ?? 'null',
+      description: json['description'] ?? 'null',
     );
   }
 
@@ -77,14 +77,14 @@ class BorrowHistory {
         returnHistorysJson.map((returnHistoryJson) => ReturnHistory.fromJson(returnHistoryJson)).toList();
 
     return BorrowHistory(
-      id: json['id'].toString(),
-      user: json['user'],
-      itemId: json['itemId'].toString(),
-      borrowNum: json['borrowNum'],
-      borrowTime: DateTime.parse(json['borrowTime']).toLocal(),
+      id: (json['id'] ?? 0).toString(),
+      user: (json['user'] ?? 0).toString(),
+      itemId: (json['itemId'] ?? 0).toString(),
+      borrowNum: json['borrowNum'] ?? 0,
+      borrowTime: DateTime.parse(json['borrowTime'] ?? 'null').toLocal(),
       returnHistorys: returnHistorysList,
-      returnNum: json['returnNum'],
-      isOver: json['isOver'],
+      returnNum: json['returnNum'] ?? 0,
+      isOver: json['isOver'] ?? true,
     );
   }
 
@@ -99,34 +99,46 @@ class BorrowHistory {
 
 class ReturnHistory {
   int returnNum;
+  String returnUser;
   DateTime returnTime;
 
   ReturnHistory({
     required this.returnNum,
+    required this.returnUser,
     required this.returnTime,
   });
 
   factory ReturnHistory.fromJson(Map<String, dynamic> json) {
     return ReturnHistory(
-      returnNum: json['returnNum'],
-      returnTime: DateTime.parse(json['returnTime']).toLocal(),
+      returnNum: json['returnNum'] ?? 0,
+      returnUser: (json['returnUser'] ?? 0).toString(),
+      returnTime: DateTime.parse(json['returnTime'] ?? 'null').toLocal(),
     );
   }
 }
 
-class ItemDataManager {
-  static final ItemDataManager _itemDataManager = ItemDataManager._internal();
+class DataManager {
+  static final DataManager _dataManager = DataManager._internal();
 
   ///工厂构造函数
-  factory ItemDataManager() {
-    return _itemDataManager;
+  factory DataManager() {
+    return _dataManager;
   }
 
   ///构造函数私有化，防止被误创建
-  ItemDataManager._internal();
+  DataManager._internal();
 
   String getMyUserName() {
     return ApiService.instance.username;
+  }
+
+  Future<String> getFirstName(String? username) async {
+    var name = await ApiService.instance.getFirstName(username!);
+    return name;
+  }
+
+  Future<Response> updateFirstName(String username, String firstname) async {
+    return await ApiService.instance.updateFirstName(username, firstname);
   }
 
   Future<Response> registerItem(
@@ -180,7 +192,6 @@ class ItemDataManager {
   }
 
   Future<List<BorrowHistory>> searchBorrowHistory(String searchId, int searchType) async {
-    print(searchId);
     List<BorrowHistory> result = [];
     if (searchType == HistorySearchType.USERNAME) {
       result = await ApiService.instance.searchBorrowHistory(searchId, 'user');
@@ -192,7 +203,13 @@ class ItemDataManager {
       if (left.isOver ^ right.isOver) {
         return left.isOver ? 1 : -1;
       } else {
-        return left.borrowTime.isBefore(right.borrowTime) ? 1 : -1;
+        var leftIsMine = left.user == getMyUserName();
+        var rightIsMine = right.user == getMyUserName();
+        if (leftIsMine ^ rightIsMine) {
+          return rightIsMine ? 1 : -1;
+        } else {
+          return left.borrowTime.isBefore(right.borrowTime) ? 1 : -1;
+        }
       }
     });
     return result;
@@ -200,13 +217,14 @@ class ItemDataManager {
 
   Future<Response> editItem(
       String id, String equipId, String itemName, int itemTotalNum, String itemLocation, String itemDescription) async {
-    ItemData tmpData = ItemData(
-        id: id,
-        equipId: equipId,
-        name: itemName,
-        totalNum: itemTotalNum,
-        location: itemLocation,
-        description: itemDescription);
+    Map<String, dynamic> tmpData = {
+      'id': id,
+      'equipId': equipId,
+      'name': itemName,
+      'totalNum': itemTotalNum,
+      'location': itemLocation,
+      'description': itemDescription,
+    };
     return ApiService.instance.updateEquipment(tmpData);
   }
 }

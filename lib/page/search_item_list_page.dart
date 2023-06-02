@@ -27,7 +27,7 @@ class _SearchItemListPageState extends State<SearchItemListPage> {
     super.initState();
     _searchType = widget.searchType;
     _itemSearchText = widget.itemSearchText;
-    _itemIds = ItemDataManager().SearchItemList(_itemSearchText, _searchType);
+    _itemIds = DataManager().SearchItemList(_itemSearchText, _searchType);
   }
 
   @override
@@ -78,6 +78,6 @@ class _SearchItemListPageState extends State<SearchItemListPage> {
   }
 
   refreshData() {
-    _itemIds = ItemDataManager().getItemIdList();
+    _itemIds = DataManager().getItemIdList();
   }
 }

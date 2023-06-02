@@ -130,19 +130,21 @@ class _AddPageState extends State<AddPage> {
                 fontSize: 20,
                 onPress: () async {
                   if ((itemEquipId.isNotEmpty) && (itemName.isNotEmpty) && (itemTotalNum >= 0)) {
-                    await ItemDataManager()
-                        .registerItem(itemEquipId, itemName, itemTotalNum, itemLocation, itemDescription)
-                        .then((value) {
-                      if (value.statusCode == 201) {
-                        PageUtil.instance.showSingleBtnDialog(context, "通知", "添加成功", () {
-                          Navigator.pop(context);
-                        });
-                      } else {
-                        PageUtil.instance.showSingleBtnDialog(context, "错误", value.body, () {
-                          Navigator.pop(context);
-                        });
-                      }
-                    });
+                    PageUtil.instance.showDoubleBtnDialog(context, '', '是否确认添加？', () async {
+                      await DataManager()
+                          .registerItem(itemEquipId, itemName, itemTotalNum, itemLocation, itemDescription)
+                          .then((value) {
+                        if (value.statusCode == 201) {
+                          PageUtil.instance.showSingleBtnDialog(context, "通知", "添加成功", () {
+                            Navigator.pop(context);
+                          });
+                        } else {
+                          PageUtil.instance.showSingleBtnDialog(context, "错误", value.body, () {
+                            Navigator.pop(context);
+                          });
+                        }
+                      });
+                    }, () {});
                   } else {
                     PageUtil.instance.showSingleBtnDialog(context, "错误", "添加参数错误", () {});
                   }

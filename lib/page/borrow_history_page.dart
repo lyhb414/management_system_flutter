@@ -32,13 +32,15 @@ class _BorrowHistoryPageState extends State<BorrowHistoryPage> {
   }
 
   Future<Map<String, dynamic>> fetchNetData() async {
-    var history = await ItemDataManager().getBorrowHistoryById(_historyId);
+    var history = await DataManager().getBorrowHistoryById(_historyId);
     var itemId = history?.itemId;
     var returnHistorys = history?.returnHistorys;
+    var firstname = await DataManager().getFirstName(history?.user);
 
-    var item = await ItemDataManager().getItemById(itemId!);
+    var item = await DataManager().getItemById(itemId!);
+    var itemName = item?.name;
 
-    return {'borrowHistory': history, 'returnHistorys': returnHistorys, 'itemName': item};
+    return {'borrowHistory': history, 'returnHistorys': returnHistorys, 'itemName': itemName, 'firstname': firstname};
   }
 
   Future<void> _onRefresh() async {
@@ -62,6 +64,7 @@ class _BorrowHistoryPageState extends State<BorrowHistoryPage> {
   Widget getBodyView(BuildContext context, Map<String, dynamic> netData) {
     var borrowHistory = netData['borrowHistory'];
     var returnHistorys = netData['returnHistorys'];
+    var firstname = netData['firstname'];
 
     return ListView(
       children: <Widget>[
@@ -71,7 +74,7 @@ class _BorrowHistoryPageState extends State<BorrowHistoryPage> {
             const Padding(padding: EdgeInsets.all(5.0)),
             Text("已归还: ${borrowHistory.returnNum}/${borrowHistory.borrowNum}"),
             const Padding(padding: EdgeInsets.all(5.0)),
-            Text("借用用户: ${borrowHistory.user}"),
+            Text("借用用户: $firstname"),
             const Padding(padding: EdgeInsets.all(5.0)),
             Text("借用时间: ${formatDate(borrowHistory.borrowTime, [
                   'yyyy',
@@ -118,14 +121,16 @@ class _BorrowHistoryPageState extends State<BorrowHistoryPage> {
                   fontSize: 20,
                   onPress: () async {
                     if (returnNum >= 0) {
-                      await borrowHistory.returnItem(returnNum).then((value) {
-                        _onRefresh();
-                        if (value.statusCode == 200) {
-                          PageUtil.instance.showSingleBtnDialog(context, "通知", "归还成功", () {});
-                        } else {
-                          PageUtil.instance.showSingleBtnDialog(context, "错误", value.body, () {});
-                        }
-                      });
+                      PageUtil.instance.showDoubleBtnDialog(context, '', '是否确认归还？', () async {
+                        await borrowHistory.returnItem(returnNum).then((value) {
+                          _onRefresh();
+                          if (value.statusCode == 200) {
+                            PageUtil.instance.showSingleBtnDialog(context, "通知", "归还成功", () {});
+                          } else {
+                            PageUtil.instance.showSingleBtnDialog(context, "错误", value.body, () {});
+                          }
+                        });
+                      }, () {});
                     } else {
                       PageUtil.instance.showSingleBtnDialog(context, "错误", "参数错误", () {});
                     }
@@ -138,14 +143,16 @@ class _BorrowHistoryPageState extends State<BorrowHistoryPage> {
                   textColor: Colors.white,
                   fontSize: 20,
                   onPress: () async {
-                    await borrowHistory.returnAllItem().then((value) {
-                      _onRefresh();
-                      if (value.statusCode == 200) {
-                        PageUtil.instance.showSingleBtnDialog(context, "通知", "归还成功", () {});
-                      } else {
-                        PageUtil.instance.showSingleBtnDialog(context, "错误", value.body, () {});
-                      }
-                    });
+                    PageUtil.instance.showDoubleBtnDialog(context, '', '是否确认归还全部？', () async {
+                      await borrowHistory.returnAllItem().then((value) {
+                        _onRefresh();
+                        if (value.statusCode == 200) {
+                          PageUtil.instance.showSingleBtnDialog(context, "通知", "归还成功", () {});
+                        } else {
+                          PageUtil.instance.showSingleBtnDialog(context, "错误", value.body, () {});
+                        }
+                      });
+                    }, () {});
                   },
                 ),
               ],
