@@ -4,8 +4,9 @@ import 'package:management_system_flutter/data/api_service.dart';
 import 'package:management_system_flutter/data/data.dart';
 import 'package:management_system_flutter/page/home_page.dart';
 import 'package:management_system_flutter/page/regester_page.dart';
+import 'package:management_system_flutter/page/setIP_page.dart';
 import 'package:management_system_flutter/utils/page_util.dart';
-import 'package:management_system_flutter/widget/await_button%20copy.dart';
+import 'package:management_system_flutter/widget/await_button.dart';
 import 'package:management_system_flutter/widget/login_input_widget.dart';
 
 void main() {
@@ -49,6 +50,16 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
+        actions: <Widget>[
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) {
+                return const SetIPPage();
+              }));
+            },
+          ),
+        ],
       ),
       body: getBodyView(),
     );

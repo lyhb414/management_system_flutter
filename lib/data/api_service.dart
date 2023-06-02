@@ -11,14 +11,16 @@ class ApiService {
   ApiService._privateConstructor();
   static final ApiService instance = ApiService._privateConstructor();
 
-  final String baseApiUrl = "http://127.0.0.1:8000/api/";
+  final String baseApiUrl1 = "http://";
+  final String baseApiUrl2 = ":8888/api/";
   String username = '';
   String password = '';
+  String IP = '';
   String get authorization => 'Basic ${base64Encode(utf8.encode('$username:$password'))}';
 
   //用户注册
   Future<Response> register(String username, String password, String name) {
-    final url = Uri.parse('${baseApiUrl}register/');
+    final url = Uri.parse('$baseApiUrl1$IP${baseApiUrl2}register/');
     final body = jsonEncode(<String, String>{
       'username': username,
       'password': password,
@@ -37,7 +39,7 @@ class ApiService {
   //登录验证用户名密码
   Future<Response> checkCredentials(String username, String password) async {
     final response = await http.post(
-      Uri.parse('${baseApiUrl}check_credentials/'),
+      Uri.parse('$baseApiUrl1$IP${baseApiUrl2}check_credentials/'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -57,7 +59,7 @@ class ApiService {
   //提升为管理员
   Future<Response> promoteToAdmin(String username) async {
     final response = await http.post(
-      Uri.parse('${baseApiUrl}promote_to_admin/'),
+      Uri.parse('$baseApiUrl1$IP${baseApiUrl2}promote_to_admin/'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': authorization,
@@ -73,7 +75,7 @@ class ApiService {
   //取消管理员资格
   Future<Response> demoteFromAdmin(String username) async {
     final response = await http.post(
-      Uri.parse('${baseApiUrl}demote_from_admin/'),
+      Uri.parse('$baseApiUrl1$IP${baseApiUrl2}demote_from_admin/'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': authorization,
@@ -89,7 +91,7 @@ class ApiService {
 //判断自己是否为管理员
   Future<bool> checkAdmin() async {
     final response = await http.get(
-      Uri.parse('${baseApiUrl}check_admin/'),
+      Uri.parse('$baseApiUrl1$IP${baseApiUrl2}check_admin/'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': authorization,
@@ -113,7 +115,7 @@ class ApiService {
   //获取用户姓名
   Future<String> getFirstName(String username) async {
     final response = await http.get(
-      Uri.parse('${baseApiUrl}get_first_name/$username/'),
+      Uri.parse('$baseApiUrl1$IP${baseApiUrl2}get_first_name/$username/'),
       headers: {
         'Content-Type': 'application/json, charset=UTF-8',
         'Authorization': authorization,
@@ -135,7 +137,7 @@ class ApiService {
     });
 
     final response = await http.put(
-      Uri.parse('${baseApiUrl}update_first_name/$username/'),
+      Uri.parse('$baseApiUrl1$IP${baseApiUrl2}update_first_name/$username/'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': authorization,
@@ -149,7 +151,7 @@ class ApiService {
   //获取器材id列表
   Future<List<String>> getEquipmentIdList() async {
     final response = await http.get(
-      Uri.parse('${baseApiUrl}equipment_ids/'),
+      Uri.parse('$baseApiUrl1$IP${baseApiUrl2}equipment_ids/'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': authorization,
@@ -168,7 +170,7 @@ class ApiService {
   // 创建器材对象
   Future<Response> createEquipment(Map<String, dynamic> equipmentData) async {
     final response = await http.post(
-      Uri.parse('${baseApiUrl}equipment/'),
+      Uri.parse('$baseApiUrl1$IP${baseApiUrl2}equipment/'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': authorization,
@@ -181,7 +183,7 @@ class ApiService {
 
   // 删除器材对象
   Future<Response> deleteEquipment(String equipmentId) async {
-    final apiUrl = Uri.parse('${baseApiUrl}equipment/$equipmentId/');
+    final apiUrl = Uri.parse('$baseApiUrl1$IP${baseApiUrl2}equipment/$equipmentId/');
     final response = await http.delete(
       apiUrl,
       headers: {
@@ -195,7 +197,7 @@ class ApiService {
 
   // 获取器材对象
   Future<ItemData?> getEquipment(String equipmentId) async {
-    final apiUrl = Uri.parse('${baseApiUrl}equipment/$equipmentId/');
+    final apiUrl = Uri.parse('$baseApiUrl1$IP${baseApiUrl2}equipment/$equipmentId/');
     final response = await http.get(
       apiUrl,
       headers: {
@@ -215,7 +217,7 @@ class ApiService {
 
   // 更新器材对象
   Future<Response> updateEquipment(Map<String, dynamic> updatedData) async {
-    final apiUrl = Uri.parse('${baseApiUrl}equipment/${updatedData['id']}/');
+    final apiUrl = Uri.parse('$baseApiUrl1$IP${baseApiUrl2}equipment/${updatedData['id']}/');
     final jsonData = json.encode(updatedData);
 
     // 发起PATCH请求
@@ -233,7 +235,7 @@ class ApiService {
 
   //借用器材
   Future<Response> borrowEquipment(String equipmentId, int borrowDeltaNum) async {
-    final apiUrl = Uri.parse('${baseApiUrl}equipment/$equipmentId/borrow/');
+    final apiUrl = Uri.parse('$baseApiUrl1$IP${baseApiUrl2}equipment/$equipmentId/borrow/');
     final response = await http.patch(
       apiUrl,
       headers: {
@@ -247,7 +249,7 @@ class ApiService {
 
   //搜索器材
   Future<List<ItemData>> searchEquipment(String query, String searchBy) async {
-    final apiUrl = Uri.parse('${baseApiUrl}equipment_search/');
+    final apiUrl = Uri.parse('$baseApiUrl1$IP${baseApiUrl2}equipment_search/');
 
     // 构建查询参数
     final Map<String, String> queryParams = {
@@ -272,7 +274,7 @@ class ApiService {
 
   // 获取借用记录对象
   Future<BorrowHistory?> getBorrowHistory(String borrowHistoryId) async {
-    final apiUrl = Uri.parse('${baseApiUrl}borrow_history/$borrowHistoryId/');
+    final apiUrl = Uri.parse('$baseApiUrl1$IP${baseApiUrl2}borrow_history/$borrowHistoryId/');
     final response = await http.get(
       apiUrl,
       headers: {
@@ -292,7 +294,7 @@ class ApiService {
 
   //搜索借用记录
   Future<List<BorrowHistory>> searchBorrowHistory(String query, String searchBy) async {
-    final apiUrl = Uri.parse('${baseApiUrl}borrow_history_search/');
+    final apiUrl = Uri.parse('$baseApiUrl1$IP${baseApiUrl2}borrow_history_search/');
 
     // 构建查询参数
     final Map<String, String> queryParams = {
@@ -317,7 +319,7 @@ class ApiService {
 
   //归还器材
   Future<Response> returnEquipment(String historyId, int returnNum) async {
-    final url = Uri.parse('${baseApiUrl}equipment_return/');
+    final url = Uri.parse('$baseApiUrl1$IP${baseApiUrl2}equipment_return/');
     final headers = <String, String>{
       'Content-Type': 'application/json',
       'Authorization': authorization,
@@ -334,7 +336,7 @@ class ApiService {
 
   //归还全部器材
   Future<Response> returnAllEquipment(String historyId) async {
-    final url = Uri.parse('${baseApiUrl}equipment_return_all/');
+    final url = Uri.parse('$baseApiUrl1$IP${baseApiUrl2}equipment_return_all/');
     final headers = <String, String>{
       'Content-Type': 'application/json',
       'Authorization': authorization,
