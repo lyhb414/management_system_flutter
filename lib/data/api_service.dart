@@ -1,4 +1,4 @@
-// ignore_for_file: non_constant_identifier_names
+// ignore_for_file: non_constant_identifier_names, constant_identifier_names
 
 import 'dart:async';
 import 'dart:convert';
@@ -15,7 +15,8 @@ class ApiService {
   final String baseApiUrl2 = ":8888/api/";
   String username = '';
   String password = '';
-  String IP = '';
+  String IP = '127.0.0.1';
+  static const String DefaultIp = '127.0.0.1';
   String get authorization => 'Basic ${base64Encode(utf8.encode('$username:$password'))}';
 
   //用户注册

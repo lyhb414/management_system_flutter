@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:management_system_flutter/data/api_service.dart';
 import 'package:management_system_flutter/utils/page_util.dart';
-import 'package:management_system_flutter/utils/page_util.dart';
 import 'package:management_system_flutter/widget/await_button.dart';
 
 //用户操作页面
@@ -62,17 +61,40 @@ class _SetIPPageState extends State<SetIPPage> {
                   onPress: () async {
                     if ((ip.isNotEmpty)) {
                       ApiService.instance.IP = ip;
-                      PageUtil.instance.showSingleBtnDialog(context, "通知", '设置成功', () {});
+                      PageUtil.instance.showSingleBtnDialog(context, "通知", '设置成功', () {
+                        _onRefresh();
+                      });
                     } else {
                       PageUtil.instance.showSingleBtnDialog(context, "错误", "输入参数错误", () {});
                     }
                   },
                 ),
+                const Padding(padding: EdgeInsets.all(10.0)),
+                AwaitButton(
+                  text: "重置",
+                  color: Theme.of(context).primaryColor,
+                  textColor: Colors.white,
+                  fontSize: 20,
+                  onPress: () async {
+                    ApiService.instance.IP = ApiService.DefaultIp;
+                    PageUtil.instance.showSingleBtnDialog(context, "通知", '重置成功', () {
+                      _onRefresh();
+                    });
+                  },
+                ),
               ],
-            )
+            ),
+            const Padding(padding: EdgeInsets.all(10.0)),
+            const Text("默认IP地址: ${ApiService.DefaultIp}"),
+            const Padding(padding: EdgeInsets.all(5.0)),
+            Text("当前IP地址: ${ApiService.instance.IP}"),
           ],
         )
       ],
     );
+  }
+
+  Future<void> _onRefresh() async {
+    setState(() {});
   }
 }
