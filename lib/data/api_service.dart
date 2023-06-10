@@ -15,8 +15,8 @@ class ApiService {
   final String baseApiUrl2 = ":8888/api/";
   String username = '';
   String password = '';
-  String IP = '127.0.0.1';
-  static const String DefaultIp = '127.0.0.1';
+  String IP = '222.20.94.12';
+  static const String DefaultIp = '222.20.94.12';
   String get authorization => 'Basic ${base64Encode(utf8.encode('$username:$password'))}';
 
   //用户注册
@@ -57,7 +57,7 @@ class ApiService {
     return response;
   }
 
-  //提升为管理员
+  //授予管理员权限
   Future<Response> promoteToAdmin(String username) async {
     final response = await http.post(
       Uri.parse('$baseApiUrl1$IP${baseApiUrl2}promote_to_admin/'),
@@ -89,10 +89,60 @@ class ApiService {
     return response;
   }
 
-//判断自己是否为管理员
+  //判断自己是否为管理员
   Future<bool> checkAdmin() async {
     final response = await http.get(
       Uri.parse('$baseApiUrl1$IP${baseApiUrl2}check_admin/'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': authorization,
+      },
+    );
+
+    if (response.statusCode == 200) {
+      var data = json.decode(response.body);
+      return data['is_admin'];
+    } else {
+      return false;
+    }
+  }
+
+  //授予成员权限
+  Future<Response> promoteToMember(String username) async {
+    final response = await http.post(
+      Uri.parse('$baseApiUrl1$IP${baseApiUrl2}promote_to_member/'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': authorization,
+      },
+      body: jsonEncode(<String, String>{
+        'username': username,
+      }),
+    );
+
+    return response;
+  }
+
+  //取消用户资格
+  Future<Response> demoteFromMember(String username) async {
+    final response = await http.post(
+      Uri.parse('$baseApiUrl1$IP${baseApiUrl2}demote_from_member/'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': authorization,
+      },
+      body: jsonEncode(<String, String>{
+        'username': username,
+      }),
+    );
+
+    return response;
+  }
+
+  //判断自己是否有成员权限
+  Future<bool> checkMember() async {
+    final response = await http.get(
+      Uri.parse('$baseApiUrl1$IP${baseApiUrl2}check_member/'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': authorization,
@@ -216,12 +266,11 @@ class ApiService {
     }
   }
 
-  // 更新器材对象
+  //编辑器材对象
   Future<Response> updateEquipment(Map<String, dynamic> updatedData) async {
     final apiUrl = Uri.parse('$baseApiUrl1$IP${baseApiUrl2}equipment/${updatedData['id']}/');
     final jsonData = json.encode(updatedData);
 
-    // 发起PATCH请求
     final response = await http.patch(
       apiUrl,
       headers: {
@@ -269,6 +318,31 @@ class ApiService {
     List<ItemData> items = [];
     if (response.statusCode == 200) {
       items = (json.decode(response.body) as List).map((item) => ItemData.fromJson(item)).toList();
+    } else {}
+    return items;
+  }
+
+  //搜索器材修改记录
+  Future<List<EquipmentModification>> searchEquipmentModification(String query, String searchBy) async {
+    final apiUrl = Uri.parse('$baseApiUrl1$IP${baseApiUrl2}equipment_modification_search/');
+
+    final Map<String, String> queryParams = {
+      'query': query,
+      'search_by': searchBy,
+    };
+
+    final response = await http.get(
+      apiUrl.replace(queryParameters: queryParams),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': authorization,
+      },
+    );
+
+    List<EquipmentModification> items = [];
+    if (response.statusCode == 200) {
+      final decodedResponse = json.decode(utf8.decode(response.bodyBytes));
+      items = (decodedResponse as List).map((item) => EquipmentModification.fromJson(item)).toList();
     } else {}
     return items;
   }

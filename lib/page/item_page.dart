@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:management_system_flutter/data/api_service.dart';
 import 'package:management_system_flutter/data/data.dart';
+import 'package:management_system_flutter/page/euipment_modification_page.dart';
 import 'package:management_system_flutter/utils/page_util.dart';
 import 'package:management_system_flutter/widget/await_button.dart';
 import 'package:management_system_flutter/widget/common_button.dart';
@@ -26,6 +27,7 @@ class _ItemPageState extends State<ItemPage> {
   late final String _itemId;
   late Future<ItemData?> _itemData;
   late Future<bool?> _selfIsAdmin;
+  late Future<String?> _itemCreateUserFirstName;
 
   @override
   void initState() {
@@ -37,7 +39,11 @@ class _ItemPageState extends State<ItemPage> {
   @override
   Widget build(BuildContext context) {
     return MultiFutureBuilder(
-        futures: [_itemData, _selfIsAdmin],
+        futures: [
+          _itemData,
+          _selfIsAdmin,
+          _itemCreateUserFirstName,
+        ],
         builder: (BuildContext context, List<dynamic> data) {
           return Scaffold(
             appBar: AppBar(
@@ -51,12 +57,12 @@ class _ItemPageState extends State<ItemPage> {
                 ),
               ],
             ),
-            body: getBodyView(data[0], data[1]),
+            body: getBodyView(data[0], data[1], data[2]),
           );
         });
   }
 
-  Widget getBodyView(ItemData? itemData, bool isAdmin) {
+  Widget getBodyView(ItemData? itemData, bool isAdmin, String itemCreateUserFirstName) {
     var remainNum = itemData!.getRemainNum();
     return RefreshIndicator(
       onRefresh: _onRefresh,
@@ -69,6 +75,8 @@ class _ItemPageState extends State<ItemPage> {
             Text("器材id: ${itemData.equipId}"),
             const Padding(padding: EdgeInsets.all(5.0)),
             Text("器材名称: ${itemData.name}"),
+            const Padding(padding: EdgeInsets.all(5.0)),
+            Text("器材创建人: $itemCreateUserFirstName"),
             const Padding(padding: EdgeInsets.all(5.0)),
             Text("总数: ${itemData.totalNum}"),
             const Padding(padding: EdgeInsets.all(5.0)),
@@ -136,27 +144,44 @@ class _ItemPageState extends State<ItemPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Padding(padding: EdgeInsets.all(5.0)),
-                isAdmin
-                    ? CommonButton(
-                        text: "编辑",
-                        color: Colors.orange,
-                        textColor: Colors.white,
-                        fontSize: 20,
-                        onPress: (() {
-                          Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) {
-                            return EditPage(
-                              itemId: _itemId,
-                            );
-                          })).then((value) {
-                            _onRefresh();
-                          });
-                        }),
-                      )
-                    : Visibility(
-                        visible: false,
-                        child: Container(),
-                      ),
+                CommonButton(
+                  text: "编辑",
+                  color: Colors.orange,
+                  textColor: Colors.white,
+                  fontSize: 20,
+                  onPress: (() {
+                    Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) {
+                      return EditPage(
+                        itemId: _itemId,
+                      );
+                    })).then((value) {
+                      _onRefresh();
+                    });
+                  }),
+                ),
                 const Padding(padding: EdgeInsets.all(5.0)),
+                CommonButton(
+                  text: "操作记录",
+                  color: Colors.orange,
+                  textColor: Colors.white,
+                  fontSize: 20,
+                  onPress: (() {
+                    Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) {
+                      return EuipmentModificationPage(
+                        searchText: _itemId,
+                        searchType: EquipmentModificationSearchType.EQUIPMENTID,
+                      );
+                    })).then((value) {
+                      _onRefresh();
+                    });
+                  }),
+                ),
+              ],
+            ),
+            const Padding(padding: EdgeInsets.all(10.0)),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
                 isAdmin
                     ? AwaitButton(
                         text: "删除器材",
@@ -190,8 +215,9 @@ class _ItemPageState extends State<ItemPage> {
     );
   }
 
-  fetchNetData() {
+  fetchNetData() async {
     _itemData = DataManager().getItemById(_itemId);
+    _itemCreateUserFirstName = _itemData.then((value) => ApiService.instance.getFirstName(value!.createUser));
     _selfIsAdmin = ApiService.instance.checkAdmin();
   }
 

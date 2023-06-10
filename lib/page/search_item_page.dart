@@ -58,7 +58,11 @@ class _SearchItemPageState extends State<SearchItemPage> {
                       DropdownMenuItem(
                         value: ItemSearchType.ITEMID,
                         child: Text("按器材ID"),
-                      )
+                      ),
+                      DropdownMenuItem(
+                        value: ItemSearchType.CREATEUSER,
+                        child: Text("按创建人"),
+                      ),
                     ],
                     onChanged: (value) {
                       setState(() {

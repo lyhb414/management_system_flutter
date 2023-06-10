@@ -27,7 +27,7 @@ class _SearchItemListPageState extends State<SearchItemListPage> {
     super.initState();
     _searchType = widget.searchType;
     _itemSearchText = widget.itemSearchText;
-    _itemIds = DataManager().SearchItemList(_itemSearchText, _searchType);
+    refreshData();
   }
 
   @override
@@ -37,6 +37,8 @@ class _SearchItemListPageState extends State<SearchItemListPage> {
       _title1 = "按器材名称搜索:";
     } else if (_searchType == ItemSearchType.ITEMID) {
       _title1 = "按器材ID搜索:";
+    } else if (_searchType == ItemSearchType.CREATEUSER) {
+      _title1 = "按创建人搜索:";
     }
     final String _title2 = _itemSearchText;
     return MultiFutureBuilder(
@@ -78,6 +80,6 @@ class _SearchItemListPageState extends State<SearchItemListPage> {
   }
 
   refreshData() {
-    _itemIds = DataManager().getItemIdList();
+    _itemIds = DataManager().SearchItemList(_itemSearchText, _searchType);
   }
 }

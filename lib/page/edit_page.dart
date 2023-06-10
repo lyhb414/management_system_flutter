@@ -29,11 +29,14 @@ class _EditPageState extends State<EditPage> {
   var defaultItemLocation = '';
   var itemDescription = '';
   var defaultItemDescription = '';
+  var itemCreateUser = '';
+  var defaultItemCreateUser = '';
   late TextEditingController _equipIdController;
   late TextEditingController _nameController;
   late TextEditingController _numController;
   late TextEditingController _locationController;
   late TextEditingController _descriptionController;
+  late TextEditingController _createUserController;
 
   late Future<ItemData?> _itemData;
 
@@ -52,8 +55,8 @@ class _EditPageState extends State<EditPage> {
         _nameController = TextEditingController(text: defaultItemName);
 
         defaultItemTotalNum = value.totalNum;
-        _numController = TextEditingController(text: defaultItemTotalNum.toString());
         itemTotalNum = defaultItemTotalNum;
+        _numController = TextEditingController(text: defaultItemTotalNum.toString());
 
         defaultItemLocation = value.location;
         itemLocation = defaultItemLocation;
@@ -62,6 +65,10 @@ class _EditPageState extends State<EditPage> {
         defaultItemDescription = value.description;
         itemDescription = defaultItemDescription;
         _descriptionController = TextEditingController(text: defaultItemDescription);
+
+        defaultItemCreateUser = value.createUser;
+        itemCreateUser = defaultItemCreateUser;
+        _createUserController = TextEditingController(text: defaultItemCreateUser);
       });
       return value;
     });
@@ -178,6 +185,24 @@ class _EditPageState extends State<EditPage> {
               },
             ),
             const Padding(padding: EdgeInsets.all(10.0)),
+            TextFormField(
+              controller: _createUserController,
+              keyboardType: TextInputType.text,
+              textInputAction: TextInputAction.done,
+              decoration: const InputDecoration(
+                hintText: '请输入创建人ID',
+                labelText: '创建人ID',
+                border: OutlineInputBorder(),
+              ),
+              onChanged: (value) {
+                if (value.isNotEmpty) {
+                  itemCreateUser = value;
+                } else {
+                  itemCreateUser = '';
+                }
+              },
+            ),
+            const Padding(padding: EdgeInsets.all(10.0)),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -191,7 +216,8 @@ class _EditPageState extends State<EditPage> {
                     if ((itemName.isNotEmpty) && (itemTotalNum >= 0)) {
                       PageUtil.instance.showDoubleBtnDialog(context, '', '是否确认编辑？', () async {
                         await DataManager()
-                            .editItem(_itemId, itemEquipId, itemName, itemTotalNum, itemLocation, itemDescription)
+                            .editItem(_itemId, itemEquipId, itemName, itemTotalNum, itemLocation, itemDescription,
+                                itemCreateUser)
                             .then((value) {
                           if (value.statusCode == 200) {
                             PageUtil.instance.showSingleBtnDialog(context, "通知", "编辑成功", () {});
@@ -217,6 +243,7 @@ class _EditPageState extends State<EditPage> {
                     itemTotalNum = defaultItemTotalNum;
                     itemLocation = defaultItemLocation;
                     itemDescription = defaultItemDescription;
+                    itemCreateUser = defaultItemCreateUser;
 
                     _equipIdController.value = TextEditingValue(
                         text: defaultItemEquipId,
@@ -238,6 +265,10 @@ class _EditPageState extends State<EditPage> {
                         text: defaultItemDescription.toString(),
                         selection: TextSelection.fromPosition(TextPosition(
                             affinity: TextAffinity.downstream, offset: defaultItemDescription.toString().length)));
+                    _createUserController.value = TextEditingValue(
+                        text: defaultItemCreateUser.toString(),
+                        selection: TextSelection.fromPosition(TextPosition(
+                            affinity: TextAffinity.downstream, offset: defaultItemCreateUser.toString().length)));
                   },
                 ),
               ],

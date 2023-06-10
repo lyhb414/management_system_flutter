@@ -111,15 +111,13 @@ class _MyHomePageState extends State<MyHomePage> {
                       textColor: Colors.white,
                       fontSize: 16,
                       onPress: (() async {
-                        // username = 'user';
-                        // password = '11112222';
                         ApiService.instance.checkCredentials(username, password).then((value) {
                           if (value.statusCode == 200) {
                             Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) {
                               return const HomePage();
                             }));
                           } else {
-                            PageUtil.instance.showSingleBtnDialog(context, "错误", "用户名或密码错误", () {});
+                            PageUtil.instance.showSingleBtnDialog(context, "错误", value.body, () {});
                           }
                         });
                       }),

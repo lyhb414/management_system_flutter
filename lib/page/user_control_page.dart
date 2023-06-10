@@ -90,7 +90,7 @@ class _UserControlPageState extends State<UserControlPage> {
                 ),
                 const Padding(padding: EdgeInsets.all(5.0)),
                 AwaitButton(
-                  text: "取消管理员权限",
+                  text: "由管理员降级为成员",
                   color: Theme.of(context).primaryColor,
                   textColor: Colors.white,
                   fontSize: 20,
@@ -98,6 +98,56 @@ class _UserControlPageState extends State<UserControlPage> {
                     if ((username.isNotEmpty)) {
                       PageUtil.instance.showDoubleBtnDialog(context, '', '是否确认取消管理员权限？', () async {
                         await ApiService.instance.demoteFromAdmin(username).then((value) {
+                          if (value.statusCode == 200) {
+                            PageUtil.instance.showSingleBtnDialog(context, "通知", value.body, () {});
+                          } else {
+                            PageUtil.instance.showSingleBtnDialog(context, "错误", value.body, () {});
+                          }
+                        });
+                      }, () {});
+                    } else {
+                      PageUtil.instance.showSingleBtnDialog(context, "错误", "输入参数错误", () {});
+                    }
+                  },
+                ),
+              ],
+            ),
+            const Padding(padding: EdgeInsets.all(10.0)),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Padding(padding: EdgeInsets.all(10.0)),
+                AwaitButton(
+                  text: "提升为成员",
+                  color: Theme.of(context).primaryColor,
+                  textColor: Colors.white,
+                  fontSize: 20,
+                  onPress: () async {
+                    if ((username.isNotEmpty)) {
+                      PageUtil.instance.showDoubleBtnDialog(context, '', '是否确认提升为成员？', () async {
+                        await ApiService.instance.promoteToMember(username).then((value) {
+                          if (value.statusCode == 200) {
+                            PageUtil.instance.showSingleBtnDialog(context, "通知", value.body, () {});
+                          } else {
+                            PageUtil.instance.showSingleBtnDialog(context, "错误", value.body, () {});
+                          }
+                        });
+                      }, () {});
+                    } else {
+                      PageUtil.instance.showSingleBtnDialog(context, "错误", "输入参数错误", () {});
+                    }
+                  },
+                ),
+                const Padding(padding: EdgeInsets.all(5.0)),
+                AwaitButton(
+                  text: "取消成员权限",
+                  color: Theme.of(context).primaryColor,
+                  textColor: Colors.white,
+                  fontSize: 20,
+                  onPress: () async {
+                    if ((username.isNotEmpty)) {
+                      PageUtil.instance.showDoubleBtnDialog(context, '', '是否确认取消成员权限？', () async {
+                        await ApiService.instance.demoteFromMember(username).then((value) {
                           if (value.statusCode == 200) {
                             PageUtil.instance.showSingleBtnDialog(context, "通知", value.body, () {});
                           } else {

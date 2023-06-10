@@ -1,9 +1,11 @@
 // ignore_for_file: library_private_types_in_public_api, avoid_print
 
 import 'package:flutter/material.dart';
+import 'package:management_system_flutter/const/const.dart';
 import 'package:management_system_flutter/data/api_service.dart';
 import 'package:management_system_flutter/data/data.dart';
 import 'package:management_system_flutter/page/edit_user_page.dart';
+import 'package:management_system_flutter/page/euipment_modification_page.dart';
 import 'package:management_system_flutter/page/user_control_page.dart';
 import 'package:management_system_flutter/widget/multi_future_builder.dart';
 
@@ -56,9 +58,45 @@ class _UserPageState extends State<UserPage> {
               }));
             },
           ),
+          ListTile(
+            leading: const Icon(Icons.edit),
+            title: const Text(
+              '我的操作记录',
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 20,
+              ),
+            ),
+            onTap: () {
+              Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) {
+                return EuipmentModificationPage(
+                  searchText: ApiService.instance.username,
+                  searchType: EquipmentModificationSearchType.USERNAME,
+                );
+              })).then((value) {});
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.edit),
+            title: const Text(
+              '总操作记录',
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 20,
+              ),
+            ),
+            onTap: () {
+              Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) {
+                return EuipmentModificationPage(
+                  searchText: ApiService.instance.username,
+                  searchType: EquipmentModificationSearchType.ALL,
+                );
+              })).then((value) {});
+            },
+          ),
           isAdmin
               ? ListTile(
-                  leading: const Icon(Icons.edit),
+                  leading: const Icon(Icons.build),
                   title: const Text(
                     '管理员设置',
                     style: TextStyle(

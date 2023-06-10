@@ -12,6 +12,7 @@ class ItemData {
   int borrowNum;
   String location;
   String description = "None";
+  String createUser;
 
   ItemData(
       {required this.id,
@@ -20,7 +21,8 @@ class ItemData {
       required this.totalNum,
       this.borrowNum = 0,
       required this.description,
-      required this.location});
+      required this.location,
+      required this.createUser});
 
   int getRemainNum() {
     return totalNum - borrowNum;
@@ -35,6 +37,7 @@ class ItemData {
       borrowNum: json['borrowNum'] ?? 0,
       location: json['location'] ?? 'null',
       description: json['description'] ?? 'null',
+      createUser: (json['createUser'] ?? 0).toString(),
     );
   }
 
@@ -46,6 +49,7 @@ class ItemData {
       'borrowNum': borrowNum,
       'location': location,
       'description': description,
+      'createUser': createUser,
     };
   }
 }
@@ -117,6 +121,38 @@ class ReturnHistory {
   }
 }
 
+class EquipmentModification {
+  String equipmentId;
+  String equipmentName;
+  int modificationType;
+  String modificationData;
+  String username;
+  String userFirstname;
+  DateTime modificationTime;
+
+  EquipmentModification({
+    required this.equipmentId,
+    required this.equipmentName,
+    required this.modificationType,
+    required this.modificationData,
+    required this.username,
+    required this.userFirstname,
+    required this.modificationTime,
+  });
+
+  factory EquipmentModification.fromJson(Map<String, dynamic> json) {
+    return EquipmentModification(
+      equipmentId: (json['equipment_id'] ?? 0).toString(),
+      equipmentName: json['equipment_name'] ?? 'null',
+      modificationType: json['modification_type'] ?? 0,
+      modificationData: json['modification_data'] ?? 'null',
+      username: json['username'] ?? '0',
+      userFirstname: json['user_firstname'] ?? 'null',
+      modificationTime: DateTime.parse(json['modification_time'] ?? 'null').toLocal(),
+    );
+  }
+}
+
 class DataManager {
   static final DataManager _dataManager = DataManager._internal();
 
@@ -184,6 +220,8 @@ class DataManager {
       items = await ApiService.instance.searchEquipment(itemSearchText, 'name');
     } else if (searchType == ItemSearchType.ITEMID) {
       items = await ApiService.instance.searchEquipment(itemSearchText, 'equipId');
+    } else if (searchType == ItemSearchType.CREATEUSER) {
+      items = await ApiService.instance.searchEquipment(itemSearchText, 'createUser');
     }
     for (var value in items) {
       result.add(value.id);
@@ -215,8 +253,25 @@ class DataManager {
     return result;
   }
 
-  Future<Response> editItem(
-      String id, String equipId, String itemName, int itemTotalNum, String itemLocation, String itemDescription) async {
+  Future<List<EquipmentModification>> SearchEuipmentModificationList(String itemSearchText, int searchType) async {
+    List<EquipmentModification> result = [];
+    List<ItemData> items = [];
+    if (searchType == EquipmentModificationSearchType.USERNAME) {
+      result = await ApiService.instance.searchEquipmentModification(itemSearchText, 'username');
+    } else if (searchType == EquipmentModificationSearchType.EQUIPMENTID) {
+      result = await ApiService.instance.searchEquipmentModification(itemSearchText, 'equipment_id');
+    } else if (searchType == EquipmentModificationSearchType.ALL) {
+      result = await ApiService.instance.searchEquipmentModification(itemSearchText, 'all');
+    }
+
+    result.sort((left, right) {
+      return left.modificationTime.isBefore(right.modificationTime) ? 1 : -1;
+    });
+    return result;
+  }
+
+  Future<Response> editItem(String id, String equipId, String itemName, int itemTotalNum, String itemLocation,
+      String itemDescription, String itemCreateUser) async {
     Map<String, dynamic> tmpData = {
       'id': id,
       'equipId': equipId,
@@ -224,6 +279,7 @@ class DataManager {
       'totalNum': itemTotalNum,
       'location': itemLocation,
       'description': itemDescription,
+      'createUser': itemCreateUser,
     };
     return ApiService.instance.updateEquipment(tmpData);
   }
